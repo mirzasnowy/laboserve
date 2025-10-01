@@ -6,12 +6,20 @@ import { createRoot } from "react-dom/client";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route, Outlet, useLocation, Navigate } from "react-router-dom";
+import {
+  BrowserRouter,
+  Routes,
+  Route,
+  Outlet,
+  useLocation,
+  Navigate,
+} from "react-router-dom";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import Onboarding from "./pages/Onboarding";
 import Dashboard from "./pages/Dashboard";
 import LabDetail from "./pages/LabDetail"; // Import the new page
+import AdminDashboard from "./pages/AdminDashboard"; // Import the admin page
 import { AuthProvider, useAuth } from "@/hooks/useAuth";
 
 const queryClient = new QueryClient();
@@ -38,6 +46,7 @@ const AuthErrorNotifier = () => {
 const MainLayout = () => {
   const { profile, loading, firebaseUser } = useAuth();
   const location = useLocation();
+  const isAdmin = firebaseUser?.email === 'adminlaboserve@student.unsika.ac.id';
 
   // 1. While Firebase is initializing, show a global loader.
   if (loading) {
@@ -46,10 +55,7 @@ const MainLayout = () => {
 
   // 2. If auth is resolved and there is no user, they should only see the login page.
   if (!firebaseUser) {
-    if (location.pathname !== "/") {
-      return <Navigate to="/" replace />;
-    }
-    return <Outlet />; // Render the Index page.
+    return location.pathname === '/' ? <Outlet /> : <Navigate to="/" replace />;
   }
 
   // 3. A user is logged in, but we're still fetching their profile from Firestore.
@@ -57,9 +63,20 @@ const MainLayout = () => {
     return <div className="min-h-screen flex items-center justify-center">Memuat Profil...</div>;
   }
 
-  // 4. User and profile are loaded. Check if they need to complete onboarding.
+  // 4. User and profile are loaded. Handle routing based on role (Admin vs. User).
+  if (isAdmin) {
+    if (location.pathname !== '/admin') {
+      return <Navigate to="/admin" replace />;
+    }
+    return <Outlet />; // Render AdminDashboard
+  }
+
+  // 5. Handle regular user onboarding and routing.
   const isPasswordSetupNeeded = !profile.passwordSet;
-  const isDetailsSetupNeeded = profile.passwordSet && ((profile.type === 'dosen' && !profile.nidn) || (profile.type === 'mahasiswa' && !profile.kelas));
+  const isDetailsSetupNeeded =
+    profile.passwordSet &&
+    ((profile.type === "dosen" && !profile.nidn) ||
+      (profile.type === "mahasiswa" && !profile.kelas));
   const isOnboardingNeeded = isPasswordSetupNeeded || isDetailsSetupNeeded;
 
   if (isOnboardingNeeded) {
@@ -69,14 +86,21 @@ const MainLayout = () => {
     return <Outlet />; // Render the Onboarding page.
   }
 
-  // 5. User is fully authenticated and onboarded. Allow dashboard and lab detail pages.
-  if (location.pathname !== "/dashboard" && !location.pathname.startsWith("/lab")) {
+  // Block admin route for non-admins
+  if (location.pathname === '/admin') {
+      return <Navigate to="/dashboard" replace />;
+  }
+
+  // 6. User is fully authenticated and onboarded. Allow dashboard and lab detail pages.
+  if (
+    location.pathname !== "/dashboard" &&
+    !location.pathname.startsWith("/lab")
+  ) {
     return <Navigate to="/dashboard" replace />;
   }
-  
+
   return <Outlet />; // Render the Dashboard or LabDetail page.
 };
-
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
@@ -91,7 +115,9 @@ const App = () => (
               <Route path="/" element={<Index />} />
               <Route path="/onboarding" element={<Onboarding />} />
               <Route path="/dashboard" element={<Dashboard />} />
-              <Route path="/lab/:labId" element={<LabDetail />} /> {/* Add the new route */}
+              <Route path="/lab/:labId" element={<LabDetail />} />
+              <Route path="/admin" element={<AdminDashboard />} />
+              {/* Add the new route */}
             </Route>
             <Route path="*" element={<NotFound />} />
           </Routes>

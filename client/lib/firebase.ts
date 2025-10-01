@@ -1,6 +1,12 @@
 import { initializeApp } from "firebase/app";
-import { getAuth, GoogleAuthProvider, linkWithCredential, EmailAuthProvider } from "firebase/auth";
-import { getFirestore } from "firebase/firestore";
+import {
+  getAuth,
+  GoogleAuthProvider,
+  linkWithCredential,
+  EmailAuthProvider,
+} from "firebase/auth";
+import { getFirestore, collection } from "firebase/firestore";
+import { getStorage } from "firebase/storage";
 
 // !!! IMPORTANT !!!
 // Replace this with your own Firebase configuration
@@ -17,4 +23,6 @@ const firebaseConfig = {
 export const app = initializeApp(firebaseConfig);
 export const auth = getAuth(app);
 export const db = getFirestore(app);
+export const storage = getStorage(app);
 export const googleProvider = new GoogleAuthProvider();
+export const reservationsCollection = collection(db, "reservasi");

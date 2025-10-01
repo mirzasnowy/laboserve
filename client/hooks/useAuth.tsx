@@ -33,7 +33,8 @@ export type AppUser = {
 function parseUserType(email: string): Pick<AppUser, "type" | "npm"> {
   const domain = email.split("@")[1] ?? "";
   const local = email.split("@")[0] ?? "";
-  const isStudent = /student\.unsika\.ac\.id$/i.test(domain) && /^\d+$/.test(local);
+  const isStudent =
+    /student\.unsika\.ac\.id$/i.test(domain) && /^\d+$/.test(local);
   if (isStudent) return { type: "mahasiswa", npm: local };
   return { type: "dosen", npm: null };
 }
@@ -54,7 +55,11 @@ async function ensureUserDoc(user: User): Promise<AppUser> {
     passwordSet: false,
   };
   if (!snap.exists()) {
-    await setDoc(ref, { ...profile, createdAt: serverTimestamp(), updatedAt: serverTimestamp() });
+    await setDoc(ref, {
+      ...profile,
+      createdAt: serverTimestamp(),
+      updatedAt: serverTimestamp(),
+    });
     return profile;
   }
   const data = snap.data() as AppUser;
@@ -67,7 +72,7 @@ export type AuthContextType = {
   loading: boolean;
   error: string | null;
   loginWithGoogle: () => Promise<void>;
-  loginWithEmail: (email:string,password: string) => Promise<void>;
+  loginWithEmail: (email: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
   setPasswordForUser: (password: string) => Promise<void>;
   saveNIDN: (nidn: string) => Promise<void>;
@@ -90,7 +95,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         if (user?.email) {
           const emailDomain = user.email.split("@")[1];
           if (!/^(student\.)?unsika\.ac\.id$/i.test(emailDomain || "")) {
-            setError("Email yang Anda gunakan tidak terdaftar. Silakan gunakan email @unsika.ac.id atau @student.unsika.ac.id.");
+            setError(
+              "Email yang Anda gunakan tidak terdaftar. Silakan gunakan email @unsika.ac.id atau @student.unsika.ac.id.",
+            );
             await signOut(auth);
             setProfile(null);
             return;
@@ -118,10 +125,10 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     await signInWithPopup(auth, googleProvider);
   };
 
-  const loginWithEmail = async (email:string,password: string) => {
+  const loginWithEmail = async (email: string, password: string) => {
     setError(null);
     try {
-      await signInWithEmailAndPassword(auth,email, password);
+      await signInWithEmailAndPassword(auth, email, password);
     } catch (err: any) {
       console.error("Login error:", err.code);
       switch (err.code) {
@@ -134,7 +141,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           setError("Format email yang Anda masukan tidak valid.");
           break;
         default:
-          setError("Terjadi kesalahan yang tidak diketahui saat mencoba masuk.");
+          setError(
+            "Terjadi kesalahan yang tidak diketahui saat mencoba masuk.",
+          );
           break;
       }
     }
@@ -149,8 +158,12 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   };
 
   const setPasswordForUser = async (password: string) => {
-    if (!auth.currentUser || !auth.currentUser.email) throw new Error("No user");
-    const credential = EmailAuthProvider.credential(auth.currentUser.email, password);
+    if (!auth.currentUser || !auth.currentUser.email)
+      throw new Error("No user");
+    const credential = EmailAuthProvider.credential(
+      auth.currentUser.email,
+      password,
+    );
     await linkWithCredential(auth.currentUser, credential);
     const ref = doc(db, "users", auth.currentUser.uid);
     await updateDoc(ref, { passwordSet: true, updatedAt: serverTimestamp() });
@@ -172,7 +185,19 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   };
 
   const value = useMemo<AuthContextType>(
-    () => ({ firebaseUser, profile, loading, error, loginWithGoogle, loginWithEmail, logout, setPasswordForUser, saveNIDN, saveClass, clearError }),
+    () => ({
+      firebaseUser,
+      profile,
+      loading,
+      error,
+      loginWithGoogle,
+      loginWithEmail,
+      logout,
+      setPasswordForUser,
+      saveNIDN,
+      saveClass,
+      clearError,
+    }),
     [firebaseUser, profile, loading, error],
   );
 
