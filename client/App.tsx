@@ -1,0 +1,104 @@
+import "./global.css";
+import { useEffect } from "react";
+import { Toaster } from "@/components/ui/toaster";
+import { useToast } from "@/components/ui/use-toast";
+import { createRoot } from "react-dom/client";
+import { Toaster as Sonner } from "@/components/ui/sonner";
+import { TooltipProvider } from "@/components/ui/tooltip";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { BrowserRouter, Routes, Route, Outlet, useLocation, Navigate } from "react-router-dom";
+import Index from "./pages/Index";
+import NotFound from "./pages/NotFound";
+import Onboarding from "./pages/Onboarding";
+import Dashboard from "./pages/Dashboard";
+import LabDetail from "./pages/LabDetail"; // Import the new page
+import { AuthProvider, useAuth } from "@/hooks/useAuth";
+
+const queryClient = new QueryClient();
+
+// This component listens for auth errors and displays them as toasts.
+const AuthErrorNotifier = () => {
+  const { error, clearError } = useAuth();
+  const { toast } = useToast();
+
+  useEffect(() => {
+    if (error) {
+      toast({
+        title: "Login Gagal",
+        description: error,
+        variant: "destructive",
+      });
+      clearError(); // Reset the error after showing it
+    }
+  }, [error, clearError, toast]);
+
+  return null; // This component does not render anything.
+};
+
+const MainLayout = () => {
+  const { profile, loading, firebaseUser } = useAuth();
+  const location = useLocation();
+
+  // 1. While Firebase is initializing, show a global loader.
+  if (loading) {
+    return <div className="min-h-screen flex items-center justify-center">Memuat...</div>;
+  }
+
+  // 2. If auth is resolved and there is no user, they should only see the login page.
+  if (!firebaseUser) {
+    if (location.pathname !== "/") {
+      return <Navigate to="/" replace />;
+    }
+    return <Outlet />; // Render the Index page.
+  }
+
+  // 3. A user is logged in, but we're still fetching their profile from Firestore.
+  if (!profile) {
+    return <div className="min-h-screen flex items-center justify-center">Memuat Profil...</div>;
+  }
+
+  // 4. User and profile are loaded. Check if they need to complete onboarding.
+  const isPasswordSetupNeeded = !profile.passwordSet;
+  const isDetailsSetupNeeded = profile.passwordSet && ((profile.type === 'dosen' && !profile.nidn) || (profile.type === 'mahasiswa' && !profile.kelas));
+  const isOnboardingNeeded = isPasswordSetupNeeded || isDetailsSetupNeeded;
+
+  if (isOnboardingNeeded) {
+    if (location.pathname !== "/onboarding") {
+      return <Navigate to="/onboarding" replace />;
+    }
+    return <Outlet />; // Render the Onboarding page.
+  }
+
+  // 5. User is fully authenticated and onboarded. Allow dashboard and lab detail pages.
+  if (location.pathname !== "/dashboard" && !location.pathname.startsWith("/lab")) {
+    return <Navigate to="/dashboard" replace />;
+  }
+  
+  return <Outlet />; // Render the Dashboard or LabDetail page.
+};
+
+
+const App = () => (
+  <QueryClientProvider client={queryClient}>
+    <TooltipProvider>
+      <Toaster />
+      <Sonner />
+      <AuthProvider>
+        <BrowserRouter>
+          <AuthErrorNotifier />
+          <Routes>
+            <Route element={<MainLayout />}>
+              <Route path="/" element={<Index />} />
+              <Route path="/onboarding" element={<Onboarding />} />
+              <Route path="/dashboard" element={<Dashboard />} />
+              <Route path="/lab/:labId" element={<LabDetail />} /> {/* Add the new route */}
+            </Route>
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </BrowserRouter>
+      </AuthProvider>
+    </TooltipProvider>
+  </QueryClientProvider>
+);
+
+createRoot(document.getElementById("root")!).render(<App />);
