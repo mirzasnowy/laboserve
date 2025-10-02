@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
@@ -105,6 +106,11 @@ const DashboardContent = () => {
   const { toggleSidebar } = useSidebar();
   const { labs, loading, error } = useLabs();
   const { logout } = useAuth();
+  const [searchQuery, setSearchQuery] = useState("");
+
+  const filteredLabs = labs.filter((lab) =>
+    lab.name.toLowerCase().includes(searchQuery.toLowerCase())
+  );
 
   const renderContent = () => {
     if (loading) {
@@ -158,7 +164,7 @@ const DashboardContent = () => {
               </SidebarMenuButton>
             </SidebarMenuItem>
             <SidebarMenuItem>
-              <SidebarMenuButton tooltip="Jadwal">
+              <SidebarMenuButton tooltip="Jadwal" to="/jadwal">
                 <Calendar className="w-5 h-5" />
                 <span>Jadwal</span>
               </SidebarMenuButton>
@@ -190,6 +196,8 @@ const DashboardContent = () => {
                 type="text"
                 placeholder="Cari Ruangan"
                 className="bg-white rounded-full pl-10 h-10 shadow-sm"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
               />
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
             </div>
@@ -228,6 +236,8 @@ const DashboardContent = () => {
               type="text"
               placeholder="Cari Ruangan"
               className="bg-white rounded-full pl-10 h-12 shadow-sm"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
             />
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
           </div>
@@ -241,6 +251,18 @@ const DashboardContent = () => {
 
       {/* --- Bottom Navigation (Mobile) --- */}
       <footer className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 flex justify-around py-3 shadow-[0_-1px_10px_rgba(0,0,0,0.05)]">
+        <Link to="/dashboard" className="flex flex-col items-center gap-1 text-blue-600">
+          <Home className="w-6 h-6" />
+          <span className="text-xs font-semibold">Home</span>
+        </Link>
+        <Link to="/jadwal" className="flex flex-col items-center gap-1 text-gray-500">
+          <Calendar className="w-6 h-6" />
+          <span className="text-xs">Jadwal</span>
+        </Link>
+        <Link to="/history-reservation" className="flex flex-col items-center gap-1 text-gray-500">
+          <History className="w-6 h-6" />
+          <span className="text-xs">History</span>
+        </Link>
         <button
           onClick={toggleSidebar}
           className="flex flex-col items-center gap-1 text-gray-500"
@@ -248,14 +270,6 @@ const DashboardContent = () => {
           <PanelLeft className="w-6 h-6" />
           <span className="text-xs">Menu</span>
         </button>
-        <div className="flex flex-col items-center gap-1 text-blue-600">
-          <Home className="w-6 h-6" />
-          <span className="text-xs font-semibold">Home</span>
-        </div>
-        <div className="flex flex-col items-center gap-1 text-gray-500">
-          <Calendar className="w-6 h-6" />
-          <span className="text-xs">Jadwal</span>
-        </div>
       </footer>
     </div>
   );

@@ -211,6 +211,7 @@ export default function LabDetail() {
         userName={profile.displayName || ""}
         labId={labId || ""}
         userId={profile.uid}
+        labName={lab.name}
       />
     </div>
   );

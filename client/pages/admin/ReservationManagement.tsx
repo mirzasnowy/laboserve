@@ -41,6 +41,26 @@ export function ReservationManagement() {
     const reservationRef = doc(db, 'reservations', id);
     try {
       await updateDoc(reservationRef, { status, updatedAt: new Date() });
+
+      const updatedReservation = reservations.find(res => res.id === id);
+      if (updatedReservation) {
+        await fetch("/api/notify-user-booking-status", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            reservationId: updatedReservation.id,
+            userId: updatedReservation.userId,
+            status: status,
+            labName: updatedReservation.labId, // Assuming labId is the labName for now
+            date: updatedReservation.date, // Pass the original date object
+            timeSlot: updatedReservation.timeSlot,
+          }),
+        });
+        console.log(`Notification sent for user ${updatedReservation.userId} for booking ${updatedReservation.id}`);
+      }
+
     } catch (error) {
       console.error("Error updating reservation status: ", error);
     }

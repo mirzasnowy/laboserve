@@ -35,6 +35,7 @@ interface ReservationSheetProps {
   userName: string;
   userId: string;
   labId: string;
+  labName: string;
 }
 
 const Stepper = ({ currentStep }: { currentStep: number }) => (
@@ -72,7 +73,7 @@ const Stepper = ({ currentStep }: { currentStep: number }) => (
     </div>
   );
 
-export function ReservationSheet({ open, onOpenChange, userName, userId, labId }: ReservationSheetProps) {
+export function ReservationSheet({ open, onOpenChange, userName, userId, labId, labName }: ReservationSheetProps) {
   const { toast } = useToast();
   const [currentStep, setCurrentStep] = React.useState(1);
   const [isSubmitting, setIsSubmitting] = React.useState(false);
@@ -159,6 +160,7 @@ export function ReservationSheet({ open, onOpenChange, userName, userId, labId }
       // 2. Create reservation document in Firestore
       const reservationData: any = {
         labId,
+        labName,
         userId,
         userName,
         date: normalizedDate,
@@ -178,6 +180,15 @@ export function ReservationSheet({ open, onOpenChange, userName, userId, labId }
       }
 
       await addDoc(collection(db, "reservations"), reservationData);
+
+      // Notify admins about the new booking
+      await fetch("/api/notify-admin-new-booking", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ reservation: reservationData }),
+      });
 
       toast({
         title: "Reservasi Berhasil",

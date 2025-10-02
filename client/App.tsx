@@ -1,5 +1,7 @@
 import "./global.css";
 import { useEffect } from "react";
+import { seedDatabase } from "./lib/seed";
+import { requestForToken } from "./lib/notifications";
 import { Toaster } from "@/components/ui/toaster";
 import { useToast } from "@/components/ui/use-toast";
 import { createRoot } from "react-dom/client";
@@ -21,6 +23,7 @@ import Dashboard from "./pages/Dashboard";
 import LabDetail from "./pages/LabDetail"; // Import the new page
 import AdminDashboard from "./pages/AdminDashboard"; // Import the admin page
 import { HistoryReservation } from "./pages/HistoryReservation";
+import Jadwal from "./pages/Jadwal";
 import { AuthProvider, useAuth } from "@/hooks/useAuth";
 
 const queryClient = new QueryClient();
@@ -48,6 +51,12 @@ const MainLayout = () => {
   const { profile, loading, firebaseUser } = useAuth();
   const location = useLocation();
   const isAdmin = profile?.role === 'admin';
+
+  useEffect(() => {
+    if (profile && firebaseUser) {
+      requestForToken(firebaseUser.uid, profile.role);
+    }
+  }, [profile, firebaseUser]);
 
   // 1. While Firebase is initializing, show a global loader.
   if (loading) {
@@ -95,7 +104,9 @@ const MainLayout = () => {
   // 6. User is fully authenticated and onboarded. Allow dashboard and lab detail pages.
   if (
     location.pathname !== "/dashboard" &&
-    !location.pathname.startsWith("/lab")
+    !location.pathname.startsWith("/lab") &&
+    location.pathname !== "/history-reservation" &&
+    location.pathname !== "/jadwal"
   ) {
     return <Navigate to="/dashboard" replace />;
   }
@@ -103,30 +114,37 @@ const MainLayout = () => {
   return <Outlet />; // Render the Dashboard or LabDetail page.
 };
 
-const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <Toaster />
-      <Sonner />
-      <AuthProvider>
-        <BrowserRouter>
-          <AuthErrorNotifier />
-          <Routes>
-            <Route element={<MainLayout />}>
-              <Route path="/" element={<Index />} />
-              <Route path="/onboarding" element={<Onboarding />} />
-              <Route path="/dashboard" element={<Dashboard />} />
-              <Route path="/lab/:labId" element={<LabDetail />} />
-              <Route path="/admin" element={<AdminDashboard />} />
-              <Route path="/history-reservation" element={<HistoryReservation />} />
-              {/* Add the new route */}
-            </Route>
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-        </BrowserRouter>
-      </AuthProvider>
-    </TooltipProvider>
-  </QueryClientProvider>
-);
+const App = () => {
+  useEffect(() => {
+    seedDatabase();
+  }, []);
+
+  return (
+    <QueryClientProvider client={queryClient}>
+      <TooltipProvider>
+        <Toaster />
+        <Sonner />
+        <AuthProvider>
+          <BrowserRouter>
+            <AuthErrorNotifier />
+            <Routes>
+              <Route element={<MainLayout />}>
+                <Route path="/" element={<Index />} />
+                <Route path="/onboarding" element={<Onboarding />} />
+                <Route path="/dashboard" element={<Dashboard />} />
+                <Route path="/lab/:labId" element={<LabDetail />} />
+                <Route path="/admin" element={<AdminDashboard />} />
+                <Route path="/history-reservation" element={<HistoryReservation />} />
+                <Route path="/jadwal" element={<Jadwal />} />
+                {/* Add the new route */}
+              </Route>
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </BrowserRouter>
+        </AuthProvider>
+      </TooltipProvider>
+    </QueryClientProvider>
+  );
+};
 
 createRoot(document.getElementById("root")!).render(<App />);

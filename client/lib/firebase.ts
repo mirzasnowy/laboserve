@@ -7,6 +7,7 @@ import {
 } from "firebase/auth";
 import { getFirestore, collection } from "firebase/firestore";
 import { getStorage } from "firebase/storage";
+import { getMessaging } from "firebase/messaging";
 
 // !!! IMPORTANT !!!
 // Replace this with your own Firebase configuration
@@ -24,5 +25,6 @@ export const app = initializeApp(firebaseConfig);
 export const auth = getAuth(app);
 export const db = getFirestore(app);
 export const storage = getStorage(app);
+export const messaging = getMessaging(app);
 export const googleProvider = new GoogleAuthProvider();
 export const reservationsCollection = collection(db, "reservasi");

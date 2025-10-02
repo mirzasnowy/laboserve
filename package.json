@@ -18,7 +18,8 @@
     "start": "node dist/server/node-build.mjs",
     "test": "vitest --run",
     "format.fix": "prettier --write .",
-    "typecheck": "tsc"
+    "typecheck": "tsc",
+    "update:reservations": "tsx server/update-reservations.ts"
   },
   "dependencies": {
     "cross-env": "^10.1.0",

@@ -20,12 +20,7 @@ export default function Index() {
 
   const handleLogin = async () => {
     try {
-      let finalEmail = email;
-      // If email is all digits, assume it's an NPM and append domain
-      if (/^\d+$/.test(email)) {
-        finalEmail = `${email}@student.unsika.ac.id`;
-      }
-      await loginWithEmail(finalEmail, password);
+      await loginWithEmail(email, password);
       // Navigation is now handled by the MainLayout component in App.tsx
     } catch (error) {
       console.error("Email/password login failed", error);
@@ -108,13 +103,13 @@ export default function Index() {
           {/* Email */}
           <div className="mb-6">
             <label className="block text-[14px] md:text-sm font-medium text-text-primary font-['Poppins'] mb-2">
-              Email atau NPM
+              Email
             </label>
             <input
               type="text"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              placeholder="Masukan Email atau NPM"
+              placeholder="Masukan Email"
               className="w-full h-[50px] px-4 border border-border-gray rounded-lg bg-white text-[10px] md:text-sm font-medium font-['Poppins'] placeholder:text-text-placeholder focus:outline-none focus:border-primary-blue"
             />
           </div>
