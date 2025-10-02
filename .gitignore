@@ -6,7 +6,7 @@ yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
-
+laboserve-94e91-firebase-adminsdk-fbsvc-b98e272756.json
 node_modules
 dist
 dist-ssr
