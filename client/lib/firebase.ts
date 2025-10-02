@@ -11,13 +11,13 @@ import { getStorage } from "firebase/storage";
 // !!! IMPORTANT !!!
 // Replace this with your own Firebase configuration
 const firebaseConfig = {
-  apiKey: "AIzaSyBS9x6UldXWKHoGipitpjMK8Lc6qNLD-_k", // DANGER: This is a placeholder key
-  authDomain: "laboserve.firebaseapp.com",
-  projectId: "laboserve",
-  storageBucket: "laboserve.firebasestorage.app",
-  messagingSenderId: "726269974117",
-  appId: "1:726269974117:web:568c221989801e7404588c",
-  measurementId: "G-9T5HD0JHFG",
+  apiKey: "AIzaSyChfHyr0fShetpMBsFoVs0yr2A7WoyQqFY",
+  authDomain: "laboserve-94e91.firebaseapp.com",
+  projectId: "laboserve-94e91",
+  storageBucket: "laboserve-94e91.firebasestorage.app",
+  messagingSenderId: "611445813679",
+  appId: "1:611445813679:web:b81944195a46d61bb93f5a",
+  measurementId: "G-40SW5FH3VK"
 };
 
 export const app = initializeApp(firebaseConfig);

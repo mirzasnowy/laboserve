@@ -46,7 +46,7 @@ const AuthErrorNotifier = () => {
 const MainLayout = () => {
   const { profile, loading, firebaseUser } = useAuth();
   const location = useLocation();
-  const isAdmin = firebaseUser?.email === 'adminlaboserve@student.unsika.ac.id';
+  const isAdmin = profile?.role === 'admin';
 
   // 1. While Firebase is initializing, show a global loader.
   if (loading) {

@@ -92,15 +92,19 @@ export function ReservationSheet({ open, onOpenChange, userName, userId, labId }
       return;
     }
 
-    // Normalize date to the start of the day in the user's local timezone
-    const normalizedDate = new Date(date);
-    normalizedDate.setHours(0, 0, 0, 0);
+    // Define the start and end of the selected day to avoid timezone issues.
+    const startOfDay = new Date(date);
+    startOfDay.setHours(0, 0, 0, 0);
+
+    const endOfDay = new Date(date);
+    endOfDay.setHours(23, 59, 59, 999);
 
     const q = query(
       collection(db, "reservations"),
       where("labId", "==", labId),
-      where("date", "==", normalizedDate),
-      where("status", "!=", "rejected")
+      where("date", ">=", startOfDay),
+      where("date", "<=", endOfDay),
+      where("status", "==", "approved") // Only block slots that are already approved
     );
 
     const unsubscribe = onSnapshot(q, (snapshot) => {

@@ -18,11 +18,13 @@ import {
   updateDoc,
 } from "firebase/firestore";
 
+const ADMIN_EMAIL = "adminlaboserve@student.unsika.ac.id";
+
 export type AppUser = {
   uid: string;
   email: string;
   displayName: string | null;
-  role: "user";
+  role: "user" | "admin";
   type: "mahasiswa" | "dosen";
   npm: string | null;
   nidn: string | null;
@@ -47,7 +49,7 @@ async function ensureUserDoc(user: User): Promise<AppUser> {
     uid: user.uid,
     email: user.email || "",
     displayName: user.displayName,
-    role: "user",
+    role: user.email === ADMIN_EMAIL ? "admin" : "user",
     type: base.type,
     npm: base.npm,
     nidn: null,
@@ -209,3 +211,4 @@ export const useAuth = () => {
   if (!ctx) throw new Error("useAuth must be used within AuthProvider");
   return ctx;
 };
+

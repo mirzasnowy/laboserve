@@ -37,13 +37,13 @@ import { useAuth } from '@/hooks/useAuth';
 import { useLabs, Lab } from "@/hooks/useLabs";
 import { NotificationBell } from '@/components/ui/NotificationBell';
 
-const StatusBadge = ({ status }: { status: string }) => {
+const StatusBadge = ({ status }: { status: Lab['status'] }) => {
   return (
     <span
       className={cn(
         "text-xs font-semibold",
         status === "Tersedia" && "text-green-600",
-        status === "Tidak Tersedia" && "text-red-600",
+        (status === "Tidak Tersedia" || status === "Penuh Hari Ini") && "text-red-600",
         status === "Maintenance" && "text-yellow-600",
       )}
     >
@@ -52,30 +52,40 @@ const StatusBadge = ({ status }: { status: string }) => {
   );
 };
 
-const LabCard = ({ lab }: { lab: Lab }) => (
-  <Card className="flex items-center p-4 space-x-4 overflow-hidden w-full">
-    <img
-      src={lab.image}
-      alt={lab.name}
-      className="w-20 h-20 md:w-24 md:h-24 object-cover rounded-md"
-    />
-    <div className="flex-grow">
-      <p className="text-xs text-gray-500">{lab.location}</p>
-      <h3 className="text-base md:text-lg font-bold text-gray-900">
-        {lab.name}
-      </h3>
-      <p className="text-sm text-gray-600 mt-1">Status Kelas :</p>
-      <StatusBadge status={lab.status} />
-    </div>
-    <Button
-      asChild
-      size="sm"
-      className="bg-blue-600 hover:bg-blue-700 text-white shrink-0 self-end"
-    >
-      <Link to={`/lab/${lab.id}`}>Cek Kelas</Link>
-    </Button>
-  </Card>
-);
+const LabCard = ({ lab }: { lab: Lab }) => {
+  const isBookable = lab.status === "Tersedia";
+
+  return (
+    <Card className={cn(
+        "flex items-center p-4 space-x-4 overflow-hidden w-full",
+        !isBookable && "bg-gray-50"
+      )}>
+      <img
+        src={lab.image}
+        alt={lab.name}
+        className={cn("w-20 h-20 md:w-24 md:h-24 object-cover rounded-md", !isBookable && "grayscale")}
+      />
+      <div className="flex-grow">
+        <p className="text-xs text-gray-500">{lab.location}</p>
+        <h3 className="text-base md:text-lg font-bold text-gray-900">
+          {lab.name}
+        </h3>
+        <p className="text-sm text-gray-600 mt-1">Status Kelas :</p>
+        <StatusBadge status={lab.status} />
+      </div>
+      <Button
+        asChild
+        size="sm"
+        className="bg-blue-600 hover:bg-blue-700 text-white shrink-0 self-end"
+        disabled={!isBookable}
+      >
+        <Link to={`/lab/${lab.id}`} aria-disabled={!isBookable} onClick={(e) => !isBookable && e.preventDefault()}>
+            Cek Kelas
+        </Link>
+      </Button>
+    </Card>
+  )
+};
 
 const LabCardSkeleton = () => (
   <Card className="flex items-center p-4 space-x-4 overflow-hidden w-full">
