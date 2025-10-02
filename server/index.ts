@@ -4,17 +4,17 @@ import cors from "cors";
 import { handleDemo } from "./routes/demo";
 import * as admin from "firebase-admin";
 
-// Initialize Firebase Admin SDK
-if (!admin.apps.length) {
-  admin.initializeApp({
-    credential: admin.credential.applicationDefault(),
-  });
-}
-
-const db = admin.firestore();
-
-export function createServer() {
+// This function is for the production server (e.g., Netlify Functions)
+export function createProductionServer() {
   const app = express();
+
+  // Initialize Firebase Admin SDK only once
+  if (!admin.apps.length) {
+    admin.initializeApp({
+      credential: admin.credential.applicationDefault(),
+    });
+  }
+  const db = admin.firestore();
 
   // Middleware
   app.use(cors());
@@ -111,6 +111,43 @@ export function createServer() {
       console.error("Error sending user notification:", error);
       res.status(500).send({ message: "Failed to send user notification" });
     }
+  });
+
+  return app;
+}
+
+// This function is for the development server (Vite)
+export function createServer() {
+  const app = express();
+
+  // Middleware
+  app.use(cors());
+  app.use(express.json());
+  app.use(express.urlencoded({ extended: true }));
+
+  // Example API routes (simplified for dev)
+  app.get("/api/ping", (_req, res) => {
+    const ping = process.env.PING_MESSAGE ?? "ping";
+    res.json({ message: ping });
+  });
+
+  app.get("/api/demo", handleDemo);
+
+  // For dev, these endpoints might not fully function without Admin SDK
+  // but they won't crash the server.
+  app.post("/api/register-fcm-token", (_req, res) => {
+    console.log("Dev server: FCM token registration endpoint hit.");
+    res.status(200).send({ message: "FCM token registration (dev) successful" });
+  });
+
+  app.post("/api/notify-admin-new-booking", (_req, res) => {
+    console.log("Dev server: Admin notification endpoint hit.");
+    res.status(200).send({ message: "Admin notification (dev) successful" });
+  });
+
+  app.post("/api/notify-user-booking-status", (_req, res) => {
+    console.log("Dev server: User notification endpoint hit.");
+    res.status(200).send({ message: "User notification (dev) successful" });
   });
 
   return app;
