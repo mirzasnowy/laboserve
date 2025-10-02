@@ -2,6 +2,7 @@ import * as React from "react";
 import { Slot } from "@radix-ui/react-slot";
 import { VariantProps, cva } from "class-variance-authority";
 import { PanelLeft } from "lucide-react";
+import { Link, useLocation } from "react-router-dom";
 
 import { useIsMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
@@ -539,35 +540,20 @@ const sidebarMenuButtonVariants = cva(
   },
 );
 
-const SidebarMenuButton = React.forwardRef<
-  HTMLButtonElement,
-  React.ComponentProps<"button"> & {
-    asChild?: boolean;
-    isActive?: boolean;
-    tooltip?: string | React.ComponentProps<typeof TooltipContent>;
-  } & VariantProps<typeof sidebarMenuButtonVariants>
->(
-  (
-    {
-      asChild = false,
-      isActive = false,
-      variant = "default",
-      size = "default",
-      tooltip,
-      className,
-      ...props
-    },
-    ref,
-  ) => {
-    const Comp = asChild ? Slot : "button";
+const SidebarMenuButton = React.forwardRef<HTMLButtonElement, React.ComponentProps<"button"> & { asChild?: boolean; isActive?: boolean; tooltip?: string | React.ComponentProps<typeof TooltipContent>; to?: string; } & VariantProps<typeof sidebarMenuButtonVariants>>(
+  ({ asChild = false, isActive = false, variant = "default", size = "default", tooltip, className, to, ...props }, ref) => {
+    console.log('to prop:', to);
+    const Comp = asChild ? Slot : to ? Link : "button";
     const { isMobile, state } = useSidebar();
+    const location = useLocation();
 
     const button = (
       <Comp
         ref={ref}
+        to={to} // Pass the to prop to the Link component
         data-sidebar="menu-button"
         data-size={size}
-        data-active={isActive}
+        data-active={isActive || (to && location.pathname.startsWith(to))}
         className={cn(sidebarMenuButtonVariants({ variant, size }), className)}
         {...props}
       />

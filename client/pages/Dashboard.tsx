@@ -10,6 +10,7 @@ import {
   PanelLeft,
   AlertTriangle,
   User,
+  History,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Link } from "react-router-dom";
@@ -163,9 +164,9 @@ const DashboardContent = () => {
               </SidebarMenuButton>
             </SidebarMenuItem>
             <SidebarMenuItem>
-              <SidebarMenuButton tooltip="Reservation">
-                <FileText className="w-5 h-5" />
-                <span>Reservation</span>
+              <SidebarMenuButton tooltip="History Reservation" to="/history-reservation">
+                <History className="w-5 h-5" />
+                <span>History Reservation</span>
               </SidebarMenuButton>
             </SidebarMenuItem>
           </SidebarMenu>

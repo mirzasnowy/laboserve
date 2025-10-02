@@ -82,6 +82,8 @@ export function ReservationSheet({ open, onOpenChange, userName, userId, labId }
   const [selectedTime, setSelectedTime] = React.useState<string | null>(null);
   const [activityType, setActivityType] = React.useState<string>("akademik");
   const [category, setCategory] = React.useState<string>("");
+  const [lecturerName, setLecturerName] = React.useState<string>("");
+  const [courseName, setCourseName] = React.useState<string>("");
   const [description, setDescription] = React.useState<string>("");
   const [supportingFile, setSupportingFile] = React.useState<File | null>(null);
   const [bookedSlots, setBookedSlots] = React.useState<string[]>([]);
@@ -122,13 +124,15 @@ export function ReservationSheet({ open, onOpenChange, userName, userId, labId }
     setSelectedTime(null);
     setActivityType("akademik");
     setCategory("");
+    setLecturerName("");
+    setCourseName("");
     setDescription("");
     setSupportingFile(null);
     setCurrentStep(1);
   };
 
   const handleSubmit = async () => {
-    if (!date || !selectedTime || !category || !description) {
+    if (!date || !selectedTime || !category || !description || (category === "kelas-pengganti" && (!lecturerName || !courseName))) {
       toast({
         title: "Form Belum Lengkap",
         description: "Mohon isi semua field yang wajib diisi (*).",
@@ -153,7 +157,7 @@ export function ReservationSheet({ open, onOpenChange, userName, userId, labId }
       normalizedDate.setHours(0, 0, 0, 0);
 
       // 2. Create reservation document in Firestore
-      const reservationData = {
+      const reservationData: any = {
         labId,
         userId,
         userName,
@@ -167,6 +171,11 @@ export function ReservationSheet({ open, onOpenChange, userName, userId, labId }
         createdAt: serverTimestamp(),
         updatedAt: serverTimestamp(),
       };
+
+      if (category === "kelas-pengganti") {
+        reservationData.lecturerName = lecturerName;
+        reservationData.courseName = courseName;
+      }
 
       await addDoc(collection(db, "reservations"), reservationData);
 
@@ -317,9 +326,23 @@ export function ReservationSheet({ open, onOpenChange, userName, userId, labId }
                 </Select>
               </div>
 
+              {category === "kelas-pengganti" && (
+                <>
+                  <div className="space-y-2">
+                    <Label htmlFor="lecturer-name" className="font-semibold text-sm text-gray-800">Nama Dosen*</Label>
+                    <Input id="lecturer-name" placeholder="Masukkan nama dosen" className="rounded-lg h-12" value={lecturerName} onChange={(e) => setLecturerName(e.target.value)} />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="course-name" className="font-semibold text-sm text-gray-800">Nama Mata Kuliah*</Label>
+                    <Input id="course-name" placeholder="Masukkan nama mata kuliah" className="rounded-lg h-12" value={courseName} onChange={(e) => setCourseName(e.target.value)} />
+                  </div>
+                </>
+              )}
+
               <div className="space-y-2">
                 <Label htmlFor="description" className="font-semibold text-sm text-gray-800">Deskripsi*</Label>
-                <Textarea id="description" placeholder="Pilih Kategori" className="min-h-[100px] rounded-lg" value={description} onChange={(e) => setDescription(e.target.value)} />
+                <Textarea id="description" placeholder="Masukkan deskripsi kegiatan" className="min-h-[100px] rounded-lg" value={description} onChange={(e) => setDescription(e.target.value)} />
               </div>
             </>
           )}

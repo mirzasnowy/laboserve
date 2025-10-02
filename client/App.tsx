@@ -20,6 +20,7 @@ import Onboarding from "./pages/Onboarding";
 import Dashboard from "./pages/Dashboard";
 import LabDetail from "./pages/LabDetail"; // Import the new page
 import AdminDashboard from "./pages/AdminDashboard"; // Import the admin page
+import { HistoryReservation } from "./pages/HistoryReservation";
 import { AuthProvider, useAuth } from "@/hooks/useAuth";
 
 const queryClient = new QueryClient();
@@ -117,6 +118,7 @@ const App = () => (
               <Route path="/dashboard" element={<Dashboard />} />
               <Route path="/lab/:labId" element={<LabDetail />} />
               <Route path="/admin" element={<AdminDashboard />} />
+              <Route path="/history-reservation" element={<HistoryReservation />} />
               {/* Add the new route */}
             </Route>
             <Route path="*" element={<NotFound />} />
