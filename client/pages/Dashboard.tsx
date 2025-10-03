@@ -151,7 +151,7 @@ const DashboardContent = () => {
       <Sidebar className="hidden md:flex flex-col">
         <SidebarHeader className="p-4">
           <div className="flex items-center gap-2">
-            <div className="w-8 h-8 bg-blue-600 rounded-full"></div>
+            <img src="/logo-unsika-1.png" alt="Unsika Logo" className="w-8 h-8" />
             <h1 className="font-bold text-lg">Lab Unsika</h1>
           </div>
         </SidebarHeader>
