@@ -13,6 +13,9 @@ export default {
       },
     },
     extend: {
+      fontFamily: {
+        sans: ["Poppins", "sans-serif"],
+      },
       colors: {
         "primary-blue": "#4960FE",
         "secondary-blue": "#7C99FF",
