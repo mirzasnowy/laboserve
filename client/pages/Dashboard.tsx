@@ -34,7 +34,7 @@ const LabCard = ({ lab }: { lab: Lab }) => {
 
   return (
     <Card className={cn(
-        "flex items-center p-5 space-x-4 overflow-hidden w-full border-0 shadow-elegant card-hover",
+        "flex items-center p-4 md:p-5 space-x-4 overflow-hidden w-full border-0 shadow-elegant card-hover",
         !isBookable && "bg-gray-50/50"
       )}>
       <div className="relative">

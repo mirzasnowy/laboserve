@@ -12,7 +12,6 @@ export default function Index() {
   const handleGoogleLogin = async () => {
     try {
       await loginWithGoogle();
-      // Navigation is now handled by the MainLayout component in App.tsx
     } catch (error) {
       console.error("Google login failed", error);
     }
@@ -21,146 +20,226 @@ export default function Index() {
   const handleLogin = async () => {
     try {
       await loginWithEmail(email, password);
-      // Navigation is now handled by the MainLayout component in App.tsx
     } catch (error) {
       console.error("Email/password login failed", error);
-      // Error is already handled and displayed by AuthErrorNotifier
     }
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 text-text-primary">
+    <div className="relative min-h-screen overflow-hidden">
+      {/* Dynamic gradient background */}
+      <div className="absolute inset-0 bg-gradient-to-br from-blue-50 via-white to-indigo-50">
+        {/* Animated gradient orbs for depth */}
+        <div className="absolute top-20 left-10 h-72 w-72 rounded-full bg-gradient-to-r from-blue-400 to-purple-500 opacity-30 blur-[100px] animate-pulse" />
+        <div className="absolute bottom-20 right-10 h-96 w-96 rounded-full bg-gradient-to-r from-pink-400 to-orange-400 opacity-25 blur-[120px] animate-pulse" style={{animationDelay: '2s'}} />
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 h-80 w-80 rounded-full bg-gradient-to-r from-indigo-400 to-cyan-400 opacity-20 blur-[100px] animate-pulse" style={{animationDelay: '1s'}} />
+        
+        {/* Floating glass elements for extra depth */}
+        <div className="absolute top-32 right-1/4 h-32 w-32 rounded-2xl bg-white/10 backdrop-blur-xl border border-white/20 animate-float" />
+        <div className="absolute bottom-40 left-1/4 h-24 w-24 rounded-xl bg-white/10 backdrop-blur-xl border border-white/20 animate-float" style={{animationDelay: '1.5s'}} />
+      </div>
 
-      {/* Responsive layout */}
-      <div className="mx-auto max-w-6xl px-6 md:px-8 py-8 md:py-16 grid md:grid-cols-2 gap-10 lg:gap-16 items-center">
+      {/* Content */}
+      <div className="relative z-10 mx-auto max-w-6xl px-6 md:px-8 py-8 md:py-16 grid md:grid-cols-2 gap-10 lg:gap-16 items-center min-h-screen">
+        
         {/* Left hero (desktop/tablet) */}
         <div className="hidden md:block relative">
-          <div className="absolute -top-20 -left-16 h-80 w-80 rounded-full bg-gradient-to-r from-blue-400 to-indigo-600 opacity-20 blur-3xl animate-pulse" />
-          <div className="absolute top-40 -right-20 h-64 w-64 rounded-full bg-gradient-to-r from-purple-400 to-pink-400 opacity-15 blur-3xl animate-pulse" style={{animationDelay: '1s'}} />
-          <h1 className="relative z-10 font-['Poppins'] text-5xl lg:text-6xl font-bold leading-tight bg-gradient-to-r from-gray-900 via-blue-900 to-indigo-900 bg-clip-text text-transparent">
-            Selamat Datang!
-          </h1>
-          <p className="relative z-10 mt-4 text-lg text-gray-700 font-['Poppins']">
-            Masuk untuk melanjutkan ke dashboard Anda.
-          </p>
+          {/* Glass card behind text for depth */}
+          <div className="absolute -inset-4 bg-white/5 backdrop-blur-sm rounded-3xl border border-white/10" />
+          
+          <div className="relative z-10 p-8">
+            <h1 className="font-['Poppins'] text-5xl lg:text-6xl font-bold leading-tight">
+              <span className="bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 bg-clip-text text-transparent animate-gradient">
+                Selamat Datang!
+              </span>
+            </h1>
+            <p className="mt-6 text-lg text-gray-700 font-['Poppins'] backdrop-blur-sm">
+              Masuk untuk melanjutkan ke dashboard Anda.
+            </p>
+            
+            {/* Decorative elements */}
+            <div className="mt-8 flex gap-2">
+              <div className="h-1 w-20 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full" />
+              <div className="h-1 w-10 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full" />
+              <div className="h-1 w-5 bg-gradient-to-r from-pink-500 to-orange-500 rounded-full" />
+            </div>
+          </div>
         </div>
 
-        {/* Form card */}
-        <div className="glass shadow-elegant md:shadow-elegant-hover md:rounded-3xl md:p-10 md:py-12 md:border-0 md:max-w-lg md:justify-self-end w-full">
-          {/* Title (mobile) */}
-          <div className="md:hidden mb-8">
-            <h1 className="text-[30px] font-medium text-text-primary font-['Poppins'] mb-2">
-              Selamat Datang!
-            </h1>
-            <p className="text-[12px] font-medium text-text-primary font-['Poppins']">
-              Masuk Untuk Melanjutkan
-            </p>
-          </div>
+        {/* Enhanced Glass Form Card */}
+        <div className="relative w-full md:max-w-lg md:justify-self-end">
+          {/* Multiple glass layers for depth effect */}
+          <div className="absolute -inset-1 bg-gradient-to-r from-blue-400/20 to-purple-400/20 rounded-3xl blur-xl" />
+          <div className="absolute -inset-0.5 bg-white/40 rounded-3xl backdrop-blur-2xl" />
+          
+          {/* Main glass card */}
+          <div className="relative bg-white/30 backdrop-blur-2xl rounded-3xl border border-white/50 shadow-[0_8px_32px_rgba(31,38,135,0.15)] p-6 md:p-10 md:py-12">
+            {/* Inner glow effect */}
+            <div className="absolute inset-0 rounded-3xl bg-gradient-to-br from-white/50 via-transparent to-transparent opacity-50 pointer-events-none" />
+            
+            <div className="relative z-10">
+              {/* Mobile title with glass effect */}
+              <div className="md:hidden mb-8">
+                <div className="inline-block">
+                  <h1 className="text-3xl font-bold text-gray-800 font-['Poppins'] mb-2">
+                    Selamat Datang!
+                  </h1>
+                  <div className="h-1 w-full bg-gradient-to-r from-blue-500 to-purple-500 rounded-full" />
+                </div>
+                <p className="text-sm text-gray-600 font-['Poppins'] mt-3">
+                  Masuk Untuk Melanjutkan
+                </p>
+              </div>
 
-          {/* Email */}
-          <div className="mb-6">
-            <label className="block text-[14px] md:text-sm font-medium text-text-primary font-['Poppins'] mb-2">
-              Email
-            </label>
-            <input
-              type="text"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="Masukan Email"
-              className="w-full h-[50px] px-4 border border-border-gray rounded-lg bg-white text-[10px] md:text-sm font-medium font-['Poppins'] placeholder:text-text-placeholder focus:outline-none focus:border-primary-blue"
-            />
-          </div>
+              {/* Email field with enhanced glass effect */}
+              <div className="mb-6">
+                <label className="block text-sm font-medium text-gray-700 font-['Poppins'] mb-2">
+                  Email
+                </label>
+                <div className="relative group">
+                  <input
+                    type="text"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder="Masukan Email"
+                    className="w-full h-12 px-4 bg-white/50 backdrop-blur-md border border-white/60 rounded-xl text-sm font-medium font-['Poppins'] placeholder:text-gray-400 focus:outline-none focus:border-blue-400 focus:bg-white/60 transition-all duration-300 focus:shadow-[0_0_20px_rgba(59,130,246,0.3)]"
+                  />
+                  <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-blue-400/0 to-purple-400/0 group-focus-within:from-blue-400/10 group-focus-within:to-purple-400/10 pointer-events-none transition-all duration-300" />
+                </div>
+              </div>
 
-          {/* Password */}
-          <div className="mb-4">
-            <label className="block text-[14px] md:text-sm font-medium text-text-primary font-['Poppins'] mb-2">
-              Kata Sandi
-            </label>
-            <div className="relative">
-              <input
-                type={showPassword ? "text" : "password"}
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder="Masukan Kata Sandi"
-                className="w-full h-[50px] px-4 pr-12 border border-border-gray rounded-lg bg-white text-[10px] md:text-sm font-medium font-['Poppins'] placeholder:text-text-placeholder focus:outline-none focus:border-primary-blue"
-              />
+              {/* Password field with enhanced glass effect */}
+              <div className="mb-4">
+                <label className="block text-sm font-medium text-gray-700 font-['Poppins'] mb-2">
+                  Kata Sandi
+                </label>
+                <div className="relative group">
+                  <input
+                    type={showPassword ? "text" : "password"}
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    placeholder="Masukan Kata Sandi"
+                    className="w-full h-12 px-4 pr-12 bg-white/50 backdrop-blur-md border border-white/60 rounded-xl text-sm font-medium font-['Poppins'] placeholder:text-gray-400 focus:outline-none focus:border-blue-400 focus:bg-white/60 transition-all duration-300 focus:shadow-[0_0_20px_rgba(59,130,246,0.3)]"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-600 hover:text-gray-800 transition-colors duration-200"
+                  >
+                    {showPassword ? (
+                      <Eye className="w-4 h-4" />
+                    ) : (
+                      <EyeOff className="w-4 h-4" />
+                    )}
+                  </button>
+                  <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-blue-400/0 to-purple-400/0 group-focus-within:from-blue-400/10 group-focus-within:to-purple-400/10 pointer-events-none transition-all duration-300" />
+                </div>
+              </div>
+
+              {/* Forgot password link */}
+              <div className="mb-6 text-right">
+                <a
+                  href="#"
+                  className="text-sm font-medium font-['Poppins'] text-blue-600 hover:text-blue-700 transition-colors duration-200"
+                >
+                  Lupa Kata Sandi ?
+                </a>
+              </div>
+
+              {/* Enhanced submit button with glass effect */}
               <button
-                type="button"
-                onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-4 top-1/2 -translate-y-1/2 opacity-80"
+                onClick={handleLogin}
+                className="relative w-full h-12 rounded-xl overflow-hidden group mb-8"
               >
-                {showPassword ? (
-                  <Eye className="w-4 h-4 text-black" />
-                ) : (
-                  <EyeOff className="w-4 h-4 text-black" />
-                )}
+                <div className="absolute inset-0 bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-500 transition-all duration-300 group-hover:scale-105" />
+                <div className="absolute inset-0 bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                <div className="absolute inset-[1px] bg-gradient-to-r from-blue-500/90 via-indigo-500/90 to-purple-500/90 rounded-xl backdrop-blur-sm" />
+                <span className="relative z-10 flex items-center justify-center h-full text-white text-base font-semibold font-['Poppins'] tracking-wide">
+                  Masuk
+                </span>
+                <div className="absolute inset-0 rounded-xl shadow-[0_4px_20px_rgba(99,102,241,0.4)] group-hover:shadow-[0_4px_30px_rgba(99,102,241,0.6)] transition-shadow duration-300" />
+              </button>
+
+              {/* Divider with glass effect */}
+              <div className="relative mb-6">
+                <div className="absolute inset-0 flex items-center">
+                  <div className="w-full border-t border-gray-300/30"></div>
+                </div>
+                <div className="relative flex justify-center">
+                  <span className="px-4 text-sm font-medium text-gray-600 font-['Poppins']">
+                    Atau Lanjut Dengan
+                  </span>
+                </div>
+              </div>
+
+              {/* Enhanced Google button with glass effect */}
+              <button
+                onClick={handleGoogleLogin}
+                className="relative w-full h-12 group overflow-hidden rounded-xl"
+              >
+                <div className="absolute inset-0 bg-white/40 backdrop-blur-md border border-white/60 rounded-xl transition-all duration-300 group-hover:bg-white/50 group-hover:border-white/70 group-hover:shadow-[0_4px_20px_rgba(0,0,0,0.1)]" />
+                <div className="relative z-10 flex items-center justify-center space-x-3 h-full">
+                  <svg
+                    width="24"
+                    height="24"
+                    viewBox="0 0 24 24"
+                    className="shrink-0"
+                  >
+                    <path
+                      d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
+                      fill="#4285F4"
+                    />
+                    <path
+                      d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
+                      fill="#34A853"
+                    />
+                    <path
+                      d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"
+                      fill="#FBBC05"
+                    />
+                    <path
+                      d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
+                      fill="#EA4335"
+                    />
+                  </svg>
+                  <span className="text-sm font-semibold text-gray-700 font-['Poppins']">
+                    Google
+                  </span>
+                </div>
               </button>
             </div>
           </div>
-
-          {/* Forgot */}
-          <div className="mb-6 text-right">
-            <a
-              href="#"
-              className="text-[12px] md:text-sm font-medium font-['Poppins'] text-link-blue underline"
-            >
-              Lupa Kata Sandi ?
-            </a>
-          </div>
-
-          {/* Submit */}
-          <button
-            onClick={handleLogin}
-            className={cn(
-              "w-full h-[52px] rounded-full text-white text-[14px] md:text-base font-semibold font-['Poppins'] mb-8",
-              "gradient-primary shadow-lg shadow-blue-500/30 hover:shadow-xl hover:shadow-blue-500/40 transition-smooth hover:scale-[1.02]",
-            )}
-          >
-            Masuk
-          </button>
-
-          {/* Divider */}
-          <div className="text-center mb-6">
-            <span className="text-[14px] md:text-sm font-medium text-text-primary font-['Poppins']">
-              Atau Lanjut Dengan
-            </span>
-          </div>
-
-          {/* Google */}
-          <button
-            onClick={handleGoogleLogin}
-            className="w-full h-[52px] flex items-center justify-center space-x-3 border-2 border-gray-200 rounded-xl bg-white hover:bg-gray-50 transition-smooth hover:border-blue-300 hover:shadow-md"
-          >
-            <svg
-              width="24"
-              height="24"
-              viewBox="0 0 24 24"
-              className="shrink-0"
-            >
-              <path
-                d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
-                fill="#4285F4"
-              />
-              <path
-                d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
-                fill="#34A853"
-              />
-              <path
-                d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"
-                fill="#FBBC05"
-              />
-              <path
-                d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
-                fill="#EA4335"
-              />
-            </svg>
-            <span className="text-[14px] md:text-sm font-semibold text-text-secondary font-['Poppins']">
-              Google
-            </span>
-          </button>
-
         </div>
       </div>
+
+      <style jsx>{`
+        @keyframes float {
+          0%, 100% {
+            transform: translateY(0) rotate(0deg);
+          }
+          50% {
+            transform: translateY(-20px) rotate(10deg);
+          }
+        }
+        
+        @keyframes gradient {
+          0%, 100% {
+            background-position: 0% 50%;
+          }
+          50% {
+            background-position: 100% 50%;
+          }
+        }
+        
+        .animate-float {
+          animation: float 6s ease-in-out infinite;
+        }
+        
+        .animate-gradient {
+          background-size: 200% 200%;
+          animation: gradient 3s ease infinite;
+        }
+      `}</style>
     </div>
   );
 }

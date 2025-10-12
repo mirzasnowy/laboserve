@@ -89,18 +89,24 @@ const AppBottomNav = () => {
 }
 
 
-export const AppLayout = ({ children, pageTitle }: { children: React.ReactNode, pageTitle: string }) => {
+export const AppLayout = ({ children, pageTitle, fullWidth = false }: { children: React.ReactNode, pageTitle: string, fullWidth?: boolean }) => {
   return (
     <SidebarProvider>
         <div className="min-h-screen bg-gray-100 font-sans flex">
             <AppSidebar />
             <SidebarInset className="flex-1 pb-20 md:pb-0">
                 <AppHeader title={pageTitle} />
-                <main className="p-4 md:p-6 lg:p-8">
-                    <div className="max-w-7xl mx-auto">
-                        {children}
-                    </div>
-                </main>
+                <div className={cn({
+                    "p-4 md:p-6 lg:p-8": !fullWidth,
+                })}>
+                    {!fullWidth ? (
+                        <div className="max-w-7xl mx-auto">
+                            {children}
+                        </div>
+                    ) : (
+                        children
+                    )}
+                </div>
             </SidebarInset>
             <AppBottomNav />
         </div>

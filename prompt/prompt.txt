@@ -1,0 +1,586 @@
+import { useState, useEffect, useMemo } from 'react';
+import { CalendarIcon, Search, Filter, Info, ChevronRight, Moon, Sun, Sparkles, Clock, Users, MapPin, BookOpen, Zap, TrendingUp, Activity, Grid3x3, List, Calendar as CalendarIconAlt, X } from 'lucide-react';
+import { AppLayout } from '@/components/layout/AppLayout';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { useSchedules, ScheduleItem } from '@/hooks/useSchedules';
+import { Calendar } from '@/components/ui/calendar';
+import { Badge } from '@/components/ui/badge';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Skeleton } from '@/components/ui/skeleton';
+import { Button } from '@/components/ui/button';
+import { motion, AnimatePresence } from 'framer-motion';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { useIsMobile } from '@/hooks/use-mobile';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { cn } from '@/lib/utils';
+
+const DAYS = ['SENIN', 'SELASA', 'RABU', 'KAMIS', 'JUMAT'];
+
+const LABS = [
+  { id: 'lab-dasar-1', name: 'Lab Dasar 1', shortName: 'LD 1', icon: '🖥️', capacity: 40 },
+  { id: 'lab-dasar-2', name: 'Lab Dasar 2', shortName: 'LD 2', icon: '💻', capacity: 40 },
+  { id: 'lab-lanjut-1', name: 'Lab Lanjut 1', shortName: 'LL 1', icon: '🚀', capacity: 35 },
+  { id: 'lab-lanjut-2', name: 'Lab Lanjut 2', shortName: 'LL 2', icon: '⚡', capacity: 35 },
+];
+
+const TIME_SLOTS_CONFIG = {
+  'SENIN': [
+    { time: '07.30 - 10.00', duration: 150, period: 'morning' },
+    { time: '10.00 - 12.30', duration: 150, period: 'morning' },
+    { time: '12.30 - 15.00', duration: 150, period: 'afternoon' },
+    { time: '15.00 - 17.30', duration: 150, period: 'afternoon' },
+  ],
+  'SELASA': [
+    { time: '07.30 - 10.00', duration: 150, period: 'morning' },
+    { time: '10.00 - 12.30', duration: 150, period: 'morning' },
+    { time: '12.30 - 15.00', duration: 150, period: 'afternoon' },
+    { time: '15.00 - 17.30', duration: 150, period: 'afternoon' },
+  ],
+  'RABU': [
+    { time: '07.30 - 10.00', duration: 150, period: 'morning' },
+    { time: '10.00 - 12.30', duration: 150, period: 'morning' },
+    { time: '12.30 - 14.10', duration: 100, period: 'afternoon' },
+    { time: '14.10 - 15.00', duration: 50, period: 'afternoon' },
+    { time: '15.00 - 17.30', duration: 150, period: 'afternoon' },
+  ],
+  'KAMIS': [
+    { time: '07.30 - 10.00', duration: 150, period: 'morning' },
+    { time: '10.00 - 12.30', duration: 150, period: 'morning' },
+    { time: '12.30 - 15.00', duration: 150, period: 'afternoon' },
+    { time: '15.00 - 17.30', duration: 150, period: 'afternoon' },
+  ],
+  'JUMAT': [
+    { time: '07.00 - 09.30', duration: 150, period: 'morning' },
+    { time: '09.30 - 12.00', duration: 150, period: 'morning' },
+    { time: '13.00 - 14.40', duration: 100, period: 'afternoon' },
+    { time: '14.40 - 15.30', duration: 50, period: 'afternoon' },
+    { time: '15.30 - 18.00', duration: 150, period: 'evening' },
+  ],
+};
+
+const JadwalContent = () => {
+  const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
+  const [selectedSchedule, setSelectedSchedule] = useState<ScheduleItem | null>(null);
+  const [selectedDay, setSelectedDay] = useState<string>('SENIN');
+  const [searchTerm, setSearchTerm] = useState('');
+  const [filterProdi, setFilterProdi] = useState('ALL');
+  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
+  const [darkMode, setDarkMode] = useState(false);
+  const isMobile = useIsMobile();
+  
+  const { schedules, loading } = useSchedules(selectedDate);
+
+  // Dark mode effect
+  useEffect(() => {
+    document.documentElement.classList.toggle('dark', darkMode);
+  }, [darkMode]);
+
+  // Stats calculation
+  const stats = useMemo(() => {
+    const filtered = filterSchedules(schedules);
+    const totalSlots = LABS.length * getTimeSlotsForDay(selectedDay).length;
+    const occupiedSlots = filtered.length;
+    const occupancyRate = totalSlots > 0 ? Math.round((occupiedSlots / totalSlots) * 100) : 0;
+    
+    return {
+      total: filtered.length,
+      if: filtered.filter(s => s.className.startsWith('IF')).length,
+      si: filtered.filter(s => s.className.startsWith('SI')).length,
+      reservations: filtered.filter(s => s.type === 'reservation').length,
+      occupancyRate,
+      availableSlots: totalSlots - occupiedSlots
+    };
+  }, [schedules, selectedDay, searchTerm, filterProdi]);
+
+  const getProdiFromClass = (className: string): string => {
+    if (className.startsWith('IF')) return 'IF';
+    if (className.startsWith('SI')) return 'SI';
+    return 'OTHER';
+  };
+
+  const filterSchedules = (items: ScheduleItem[]) => {
+    return items.filter(item => {
+      const matchesSearch = searchTerm === '' || 
+        item.subject.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        item.lecturer.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        item.className.toLowerCase().includes(searchTerm.toLowerCase());
+      
+      const prodi = getProdiFromClass(item.className);
+      const matchesProdi = filterProdi === 'ALL' || prodi === filterProdi;
+      
+      return matchesSearch && matchesProdi;
+    });
+  };
+
+  const parseTimeToMinutes = (time: string): number => {
+    const [hoursStr, minutesStr] = time.split('.');
+    const hours = parseInt(hoursStr, 10);
+    const minutes = parseInt(minutesStr, 10) || 0;
+    if (isNaN(hours)) return NaN;
+    return hours * 60 + minutes;
+  };
+
+  const parseTimeRange = (timeSlot: string): { start: number; end: number } | null => {
+    const normalized = timeSlot.replace(/\s/g, '');
+    const parts = normalized.split('-');
+    if (parts.length !== 2) return null;
+    
+    const start = parseTimeToMinutes(parts[0]);
+    const end = parseTimeToMinutes(parts[1]);
+
+    if (isNaN(start) || isNaN(end)) return null;
+    return { start, end };
+  };
+
+  const timeRangesOverlap = (range1: { start: number; end: number }, range2: { start: number; end: number }): boolean => {
+    return range1.start < range2.end && range2.start < range1.end;
+  };
+
+  const getScheduleForSlot = (day: string, timeSlot: string, labId: string) => {
+    const slotRange = parseTimeRange(timeSlot);
+    if (!slotRange) return [];
+
+    return filterSchedules(schedules).filter(s => {
+      if (s.day.toUpperCase() !== day || s.labId !== labId) return false;
+      
+      const scheduleRange = parseTimeRange(s.timeSlot);
+      if (!scheduleRange) return false;
+
+      return timeRangesOverlap(scheduleRange, slotRange);
+    });
+  };
+
+  const getTimeSlotsForDay = (day: string) => {
+    return TIME_SLOTS_CONFIG[day as keyof typeof TIME_SLOTS_CONFIG] || TIME_SLOTS_CONFIG.SENIN;
+  };
+
+  const getClassStyle = (item: ScheduleItem) => {
+    const prodi = getProdiFromClass(item.className);
+    if (item.type === 'reservation') {
+      return 'bg-gradient-to-br from-orange-500 to-pink-500 hover:from-orange-600 hover:to-pink-600';
+    }
+    if (prodi === 'IF') {
+      return 'bg-gradient-to-br from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600';
+    }
+    return 'bg-gradient-to-br from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600';
+  };
+
+  // Enhanced Mobile Card
+  const renderMobileClassCard = (item: ScheduleItem) => {
+    const lab = LABS.find(l => l.id === item.labId);
+    const style = getClassStyle(item);
+    
+    return (
+      <motion.div
+        layout
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        exit={{ opacity: 0, y: -20 }}
+        whileHover={{ scale: 1.02 }}
+        whileTap={{ scale: 0.98 }}
+      >
+        <button
+          onClick={() => setSelectedSchedule(item)}
+          className={cn(
+            "relative overflow-hidden rounded-2xl p-4 shadow-lg transition-all w-full text-left",
+            "backdrop-blur-sm border border-white/20",
+            style
+          )}
+        >
+          <div className="absolute inset-0 bg-white/10 backdrop-blur-3xl" />
+          <div className="relative z-10">
+            <div className="flex justify-between items-start mb-2">
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2 mb-1">
+                  <span className="text-lg">{lab?.icon}</span>
+                  <Badge variant="secondary" className="bg-white/20 text-white border-white/30 backdrop-blur-sm">
+                    {item.className}
+                  </Badge>
+                </div>
+                <div className="text-white font-semibold text-sm line-clamp-2 mb-1">
+                  {item.subject}
+                </div>
+                <div className="text-white/80 text-xs flex items-center gap-1">
+                  <Users size={12} />
+                  {item.lecturer}
+                </div>
+              </div>
+              <ChevronRight className="text-white/60 mt-1" size={20} />
+            </div>
+            <div className="flex items-center gap-3 text-xs text-white/70 pt-2 border-t border-white/20">
+              <span className="flex items-center gap-1">
+                <Clock size={12} />
+                {item.timeSlot}
+              </span>
+              <span className="flex items-center gap-1">
+                <MapPin size={12} />
+                {lab?.shortName}
+              </span>
+            </div>
+          </div>
+          <div className="absolute -bottom-4 -right-4 w-20 h-20 bg-white/10 rounded-full blur-xl" />
+        </button>
+      </motion.div>
+    );
+  };
+
+  // Enhanced Desktop Card
+  const renderDesktopClassCard = (item: ScheduleItem, duration: number) => {
+    const style = getClassStyle(item);
+    
+    return (
+      <motion.div
+        layout
+        initial={{ opacity: 0, scale: 0.9 }}
+        animate={{ opacity: 1, scale: 1 }}
+        exit={{ opacity: 0, scale: 0.9 }}
+        whileHover={{ scale: 1.05, zIndex: 10 }}
+        className="relative"
+        style={{ minHeight: `${duration}px` }}
+      >
+        <button
+          onClick={() => setSelectedSchedule(item)}
+          className={cn(
+            "absolute inset-0 overflow-hidden rounded-xl shadow-lg transition-all text-left",
+            "backdrop-blur-sm border border-white/20 p-3",
+            "hover:shadow-2xl hover:border-white/40",
+            style
+          )}
+        >
+          <div className="absolute inset-0 bg-gradient-to-br from-white/20 to-transparent" />
+          <div className="relative z-10 h-full flex flex-col text-white">
+            <div className="font-bold text-xs mb-1">{item.className}</div>
+            <div className="text-xs font-medium mb-1 line-clamp-2">{item.subject}</div>
+            <div className="text-xs opacity-90 truncate flex items-center gap-1 mt-auto">
+              <Users size={10} />
+              {item.lecturer}
+            </div>
+            <div className="text-xs opacity-75 mt-1 pt-1 border-t border-white/20 flex items-center gap-1">
+              <Clock size={10} />
+              {item.timeSlot}
+            </div>
+          </div>
+          <div className="absolute -bottom-2 -right-2 w-12 h-12 bg-white/20 rounded-full blur-xl" />
+        </button>
+      </motion.div>
+    );
+  };
+
+  // Stats Cards
+  const StatsCards = () => (
+    <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.1 }}
+      >
+        <Card className="relative overflow-hidden border-0 bg-gradient-to-br from-blue-500/10 to-cyan-500/10 backdrop-blur-sm">
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-xs text-gray-600 dark:text-gray-400">Okupansi</p>
+                <p className="text-2xl font-bold text-gray-900 dark:text-white">{stats.occupancyRate}%</p>
+              </div>
+              <div className="p-2 bg-blue-500/20 rounded-lg">
+                <TrendingUp className="text-blue-500" size={20} />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </motion.div>
+
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.2 }}
+      >
+        <Card className="relative overflow-hidden border-0 bg-gradient-to-br from-green-500/10 to-emerald-500/10 backdrop-blur-sm">
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-xs text-gray-600 dark:text-gray-400">Tersedia</p>
+                <p className="text-2xl font-bold text-gray-900 dark:text-white">{stats.availableSlots}</p>
+              </div>
+              <div className="p-2 bg-green-500/20 rounded-lg">
+                <Activity className="text-green-500" size={20} />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </motion.div>
+
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.3 }}
+      >
+        <Card className="relative overflow-hidden border-0 bg-gradient-to-br from-purple-500/10 to-pink-500/10 backdrop-blur-sm">
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-xs text-gray-600 dark:text-gray-400">Kelas IF</p>
+                <p className="text-2xl font-bold text-gray-900 dark:text-white">{stats.if}</p>
+              </div>
+              <div className="p-2 bg-purple-500/20 rounded-lg">
+                <Zap className="text-purple-500" size={20} />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </motion.div>
+
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.4 }}
+      >
+        <Card className="relative overflow-hidden border-0 bg-gradient-to-br from-orange-500/10 to-red-500/10 backdrop-blur-sm">
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-xs text-gray-600 dark:text-gray-400">Reservasi</p>
+                <p className="text-2xl font-bold text-gray-900 dark:text-white">{stats.reservations}</p>
+              </div>
+              <div className="p-2 bg-orange-500/20 rounded-lg">
+                <BookOpen className="text-orange-500" size={20} />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </motion.div>
+    </div>
+  );
+
+  // Enhanced Schedule Cell
+  const renderScheduleCell = (day: string, timeSlot: string, labId: string, duration: number) => {
+    const items = getScheduleForSlot(day, timeSlot, labId);
+    
+    if (items.length === 0) {
+      return (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          whileHover={{ scale: 1.02 }}
+          className={cn(
+            "relative overflow-hidden rounded-xl border-2 border-dashed",
+            "border-gray-300 dark:border-gray-600 p-2 flex items-center justify-center",
+            "bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-900",
+            "hover:border-gray-400 dark:hover:border-gray-500 transition-all cursor-pointer",
+            "group"
+          )}
+          style={{ minHeight: `${duration}px` }}
+        >
+          <div className="text-center">
+            <Sparkles className="mx-auto h-6 w-6 text-gray-400 dark:text-gray-600 mb-1 group-hover:text-gray-500 transition-colors" />
+            <span className="text-xs font-medium text-gray-500 dark:text-gray-400">TERSEDIA</span>
+          </div>
+        </motion.div>
+      );
+    }
+
+    return (
+      <div className="space-y-2">
+        {items.map((item, idx) => (
+          <div key={idx}>
+            {renderDesktopClassCard(item, duration)}
+          </div>
+        ))}
+      </div>
+    );
+  };
+
+  return (
+    <AppLayout pageTitle="Jadwal Lab">
+      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-black transition-colors">
+        <div className="space-y-6 p-4 md:p-6">
+          {/* Floating Header */}
+          <motion.div
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+          >
+            <Card className="relative overflow-hidden border-0 shadow-2xl bg-gradient-to-r from-blue-600 to-purple-600">
+              <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent" />
+              <CardContent className="relative z-10 p-6 md:p-8">
+                <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                  <div>
+                    <h1 className="text-3xl md:text-4xl font-bold text-white mb-2 flex items-center gap-3">
+                      <CalendarIcon className="h-8 w-8" />
+                      Jadwal Laboratorium
+                    </h1>
+                    <p className="text-white/80">Sistem Manajemen Lab Terpadu</p>
+                  </div>
+                  <div className="flex gap-2">
+                    <Button
+                      variant="secondary"
+                      size="icon"
+                      onClick={() => setDarkMode(!darkMode)}
+                      className="bg-white/20 hover:bg-white/30 text-white backdrop-blur-sm"
+                    >
+                      {darkMode ? <Sun size={20} /> : <Moon size={20} />}
+                    </Button>
+                    <Button
+                      variant="secondary"
+                      size="icon"
+                      onClick={() => setViewMode(viewMode === 'grid' ? 'list' : 'grid')}
+                      className="bg-white/20 hover:bg-white/30 text-white backdrop-blur-sm"
+                    >
+                      {viewMode === 'grid' ? <List size={20} /> : <Grid3x3 size={20} />}
+                    </Button>
+                  </div>
+                </div>
+                
+                {/* Modern Legend */}
+                <div className="flex flex-wrap gap-3 mt-6">
+                  {[
+                    { color: 'from-blue-500 to-cyan-500', label: 'Informatika', icon: '💻' },
+                    { color: 'from-green-500 to-emerald-500', label: 'Sistem Informasi', icon: '📊' },
+                    { color: 'from-orange-500 to-pink-500', label: 'Reservasi', icon: '📅' },
+                  ].map((item, idx) => (
+                    <motion.div
+                      key={idx}
+                      initial={{ opacity: 0, scale: 0 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      transition={{ delay: 0.1 * idx }}
+                      className="flex items-center gap-2 px-3 py-1.5 bg-white/20 backdrop-blur-sm rounded-full"
+                    >
+                      <span className="text-lg">{item.icon}</span>
+                      <div className={`w-3 h-3 rounded-full bg-gradient-to-r ${item.color}`} />
+                      <span className="text-sm text-white font-medium">{item.label}</span>
+                    </motion.div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          </motion.div>
+
+          {/* Stats Section */}
+          <StatsCards />
+
+          {/* Main Content Tabs */}
+          <Tabs defaultValue="weekly" className="w-full">
+            <TabsList className="grid w-full max-w-md mx-auto grid-cols-2 bg-white/50 dark:bg-gray-800/50 backdrop-blur-sm">
+              <TabsTrigger value="weekly" className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-500 data-[state=active]:to-purple-500 data-[state=active]:text-white">
+                <CalendarIconAlt className="mr-2" size={16} />
+                Jadwal Mingguan
+              </TabsTrigger>
+              <TabsTrigger value="date" className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-500 data-[state=active]:to-purple-500 data-[state=active]:text-white">
+                <CalendarIcon className="mr-2" size={16} />
+                Pilih Tanggal
+              </TabsTrigger>
+            </TabsList>
+
+            <TabsContent value="weekly" className="mt-6 space-y-6">
+              {/* Search and Filter */}
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+              >
+                <Card className="border-0 shadow-xl bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm">
+                  <CardContent className="p-4">
+                    <div className="flex flex-col md:flex-row gap-3">
+                      <div className="flex-1 relative">
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
+                        <Input
+                          placeholder="Cari jadwal, dosen, atau mata kuliah..."
+                          className="pl-10 bg-white/50 dark:bg-gray-900/50 backdrop-blur-sm border-gray-200 dark:border-gray-700"
+                          value={searchTerm}
+                          onChange={(e) => setSearchTerm(e.target.value)}
+                        />
+                      </div>
+                      <Select value={filterProdi} onValueChange={setFilterProdi}>
+                        <SelectTrigger className="w-full md:w-48 bg-white/50 dark:bg-gray-900/50 backdrop-blur-sm">
+                          <Filter className="mr-2" size={16} />
+                          <SelectValue placeholder="Filter Prodi" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="ALL">Semua Prodi</SelectItem>
+                          <SelectItem value="IF">Informatika</SelectItem>
+                          <SelectItem value="SI">Sistem Informasi</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </CardContent>
+                </Card>
+              </motion.div>
+
+              {/* Day Selector */}
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.1 }}
+              >
+                <ScrollArea className="w-full">
+                  <div className="flex gap-3 pb-2">
+                    {DAYS.map((day, idx) => (
+                      <motion.button
+                        key={day}
+                        initial={{ opacity: 0, scale: 0 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        transition={{ delay: 0.05 * idx }}
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.95 }}
+                        onClick={() => setSelectedDay(day)}
+                        className={cn(
+                          "px-6 py-3 rounded-2xl font-semibold transition-all whitespace-nowrap",
+                          "shadow-lg backdrop-blur-sm",
+                          selectedDay === day
+                            ? "bg-gradient-to-r from-blue-500 to-purple-500 text-white shadow-xl"
+                            : "bg-white/80 dark:bg-gray-800/80 text-gray-700 dark:text-gray-300 hover:bg-white dark:hover:bg-gray-700"
+                        )}
+                      >
+                        {day}
+                      </motion.button>
+                    ))}
+                  </div>
+                </ScrollArea>
+              </motion.div>
+
+              {/* Special Day Notice */}
+              <AnimatePresence>
+                {(selectedDay === 'JUMAT' || selectedDay === 'RABU') && (
+                  <motion.div
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: 'auto' }}
+                    exit={{ opacity: 0, height: 0 }}
+                  >
+                    <Card className="border-0 bg-gradient-to-r from-yellow-500/10 to-orange-500/10 backdrop-blur-sm">
+                      <CardContent className="p-4">
+                        <div className="flex items-center gap-3">
+                          <div className="p-2 bg-yellow-500/20 rounded-lg">
+                            <Info className="text-yellow-600" size={20} />
+                          </div>
+                          <div>
+                            <p className="font-semibold text-sm text-yellow-800 dark:text-yellow-200">
+                              {selectedDay === 'JUMAT' ? 'Jadwal Khusus Jumat' : 'Jadwal Khusus Rabu'}
+                            </p>
+                            <p className="text-xs text-yellow-700 dark:text-yellow-300 mt-0.5">
+                              {selectedDay === 'JUMAT'
+                                ? 'Terdapat jeda istirahat sholat Jumat pukul 12.00-13.00'
+                                : 'Beberapa kelas memiliki durasi yang disesuaikan'}
+                            </p>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+
+              {/* Schedule Grid */}
+              {loading ? (
+                <div className="space-y-3">
+                  {[1, 2, 3].map(i => (
