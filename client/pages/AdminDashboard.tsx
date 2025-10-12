@@ -14,7 +14,7 @@ import {
 import { User } from 'lucide-react';
 import { ReservationManagement } from './admin/ReservationManagement';
 import { LabManagement } from './admin/LabManagement';
-import { SettingsManagement } from './admin/SettingsManagement';
+import SettingsManagement from './admin/SettingsManagement';
 
 const AdminDashboard: React.FC = () => {
   const { logout } = useAuth();

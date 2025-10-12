@@ -25,8 +25,10 @@ import Onboarding from "./pages/Onboarding";
 import Dashboard from "./pages/Dashboard";
 import LabDetail from "./pages/LabDetail"; // Import the new page
 import AdminDashboard from "./pages/AdminDashboard"; // Import the admin page
-import { HistoryReservation } from "./pages/HistoryReservation";
+import HistoryReservation from "./pages/HistoryReservation";
 import Jadwal from "./pages/Jadwal";
+import Profile from "./pages/Profile";
+import Settings from "./pages/Settings";
 import { AuthProvider, useAuth } from "@/hooks/useAuth";
 
 const queryClient = new QueryClient();
@@ -126,7 +128,9 @@ const MainLayout = () => {
     location.pathname !== "/dashboard" &&
     !location.pathname.startsWith("/lab") &&
     location.pathname !== "/history-reservation" &&
-    location.pathname !== "/jadwal"
+    location.pathname !== "/jadwal" &&
+    location.pathname !== "/profile" &&
+    location.pathname !== "/settings"
   ) {
     return <Navigate to="/dashboard" replace />;
   }
@@ -158,6 +162,8 @@ const App = () => {
                 <Route path="/admin" element={<AdminDashboard />} />
                 <Route path="/history-reservation" element={<HistoryReservation />} />
                 <Route path="/jadwal" element={<Jadwal />} />
+                <Route path="/profile" element={<Profile />} />
+                <Route path="/settings" element={<Settings />} />
                 {/* Add the new route */}
               </Route>
               <Route path="*" element={<NotFound />} />

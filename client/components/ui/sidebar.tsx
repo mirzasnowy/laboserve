@@ -542,22 +542,21 @@ const sidebarMenuButtonVariants = cva(
 
 const SidebarMenuButton = React.forwardRef<HTMLButtonElement, React.ComponentProps<"button"> & { asChild?: boolean; isActive?: boolean; tooltip?: string | React.ComponentProps<typeof TooltipContent>; to?: string; } & VariantProps<typeof sidebarMenuButtonVariants>>(
   ({ asChild = false, isActive = false, variant = "default", size = "default", tooltip, className, to, ...props }, ref) => {
-    console.log('to prop:', to);
     const Comp = asChild ? Slot : to ? Link : "button";
     const { isMobile, state } = useSidebar();
     const location = useLocation();
 
-    const button = (
-      <Comp
-        ref={ref}
-        to={to} // Pass the to prop to the Link component
-        data-sidebar="menu-button"
-        data-size={size}
-        data-active={isActive || (to && location.pathname.startsWith(to))}
-        className={cn(sidebarMenuButtonVariants({ variant, size }), className)}
-        {...props}
-      />
-    );
+    const buttonProps = {
+      ref,
+      "data-sidebar": "menu-button",
+      "data-size": size,
+      "data-active": isActive || (to && location.pathname.startsWith(to)),
+      className: cn(sidebarMenuButtonVariants({ variant, size }), className),
+      ...(to ? { to } : {}),
+      ...props,
+    };
+
+    const button = <Comp {...buttonProps as any} />;
 
     if (!tooltip) {
       return button;

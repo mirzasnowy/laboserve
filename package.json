@@ -19,7 +19,8 @@
     "test": "vitest --run",
     "format.fix": "prettier --write .",
     "typecheck": "tsc",
-    "update:reservations": "tsx server/update-reservations.ts"
+    "update:reservations": "tsx server/update-reservations.ts",
+    "seed:schedules": "cross-env GOOGLE_APPLICATION_CREDENTIALS= tsx server/seed-schedules.ts"
   },
   "dependencies": {
     "cross-env": "^10.1.0",
