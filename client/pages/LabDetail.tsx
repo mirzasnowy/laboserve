@@ -8,6 +8,7 @@ import { Card } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ArrowLeft, AlertTriangle, User, Book, Clock } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useFirebaseImage } from "@/hooks/useFirebaseImage";
 
 // This is a mock schedule. In a real app, this would also be fetched from Firestore.
 const mockSchedule = {
@@ -25,7 +26,7 @@ const StatusBadge = ({ status }: { status: string }) => {
         "text-sm font-semibold",
         status === "Tersedia" && "text-green-600",
         status === "Tidak Tersedia" && "text-red-600",
-        status === "Maintenance" && "text-yellow-600",
+        status === "Maintenance" && "text-yellow-600"
       )}
     >
       {status}
@@ -71,6 +72,7 @@ export default function LabDetail() {
   const navigate = useNavigate();
   const { profile } = useAuth();
   const { lab, loading, error } = useLabDetail(labId);
+  const { imageUrl, loading: imageLoading } = useFirebaseImage(lab?.image);
   const [isSheetOpen, setIsSheetOpen] = React.useState(false);
 
   // The main layout is now handled by the Dashboard's SidebarProvider
@@ -115,11 +117,15 @@ export default function LabDetail() {
       {/* Main Content */}
       <main className="flex-grow p-4 lg:p-8">
         <div className="max-w-6xl mx-auto">
-          <img
-            src={lab.image}
-            alt={lab.name}
-            className="w-full h-48 md:h-64 lg:h-80 object-cover rounded-xl shadow-lg"
-          />
+          {imageLoading ? (
+            <Skeleton className="w-full h-48 md:h-64 lg:h-80 object-cover rounded-xl shadow-lg" />
+          ) : (
+            <img
+              src={imageUrl || "/placeholder.svg"}
+              alt={lab.name}
+              className="w-full h-48 md:h-64 lg:h-80 object-cover rounded-xl shadow-lg"
+            />
+          )}
 
           <div className="mt-6 flex justify-between items-start">
             <div>
@@ -216,3 +222,4 @@ export default function LabDetail() {
     </div>
   );
 }
+

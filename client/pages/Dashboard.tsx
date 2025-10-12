@@ -39,14 +39,16 @@ import { useAuth } from '@/hooks/useAuth';
 import { useLabs, Lab } from "@/hooks/useLabs";
 import { NotificationBell } from '@/components/ui/NotificationBell';
 
+import { useFirebaseImage } from '@/hooks/useFirebaseImage';
+
 const StatusBadge = ({ status }: { status: Lab['status'] }) => {
   return (
     <span
       className={cn(
-        "text-xs font-semibold",
-        status === "Tersedia" && "text-green-600",
-        (status === "Tidak Tersedia" || status === "Penuh Hari Ini") && "text-red-600",
-        status === "Maintenance" && "text-yellow-600",
+        "px-3 py-1 rounded-full text-xs font-semibold text-white inline-block",
+        status === "Tersedia" && "gradient-success",
+        (status === "Tidak Tersedia" || status === "Penuh Hari Ini") && "gradient-danger",
+        status === "Maintenance" && "gradient-warning",
       )}
     >
       {status}
@@ -55,34 +57,51 @@ const StatusBadge = ({ status }: { status: Lab['status'] }) => {
 };
 
 const LabCard = ({ lab }: { lab: Lab }) => {
+  const { imageUrl, loading: imageLoading } = useFirebaseImage(lab.image);
   const isBookable = lab.status === "Tersedia";
 
   return (
     <Card className={cn(
-        "flex items-center p-4 space-x-4 overflow-hidden w-full",
-        !isBookable && "bg-gray-50"
+        "flex items-center p-5 space-x-4 overflow-hidden w-full border-0 shadow-elegant card-hover",
+        !isBookable && "bg-gray-50/50"
       )}>
-      <img
-        src={lab.image}
-        alt={lab.name}
-        className={cn("w-20 h-20 md:w-24 md:h-24 object-cover rounded-md", !isBookable && "grayscale")}
-      />
-      <div className="flex-grow">
-        <p className="text-xs text-gray-500">{lab.location}</p>
-        <h3 className="text-base md:text-lg font-bold text-gray-900">
+      <div className="relative">
+        {imageLoading ? (
+          <Skeleton className="w-20 h-20 md:w-24 md:h-24 object-cover rounded-xl" />
+        ) : (
+          <img
+            src={imageUrl || '/placeholder.svg'}
+            alt={lab.name}
+            className={cn(
+              "w-20 h-20 md:w-24 md:h-24 object-cover rounded-xl",
+              !isBookable && "grayscale opacity-60"
+            )}
+          />
+        )}
+        {isBookable && (
+          <div className="absolute -top-1 -right-1 w-3 h-3 bg-green-500 rounded-full border-2 border-white" />
+        )}
+      </div>
+      <div className="flex-grow min-w-0">
+        <p className="text-xs text-gray-500 font-medium mb-1">{lab.location}</p>
+        <h3 className="text-base md:text-lg font-bold text-gray-900 mb-2 truncate">
           {lab.name}
         </h3>
-        <p className="text-sm text-gray-600 mt-1">Status Kelas :</p>
         <StatusBadge status={lab.status} />
       </div>
       <Button
         asChild
         size="sm"
-        className="bg-blue-600 hover:bg-blue-700 text-white shrink-0 self-end"
+        className={cn(
+          "shrink-0 self-end rounded-xl font-semibold transition-smooth",
+          isBookable
+            ? "gradient-primary shadow-lg shadow-blue-500/30 hover:shadow-xl hover:shadow-blue-500/40"
+            : "bg-gray-300 text-gray-500 cursor-not-allowed"
+        )}
         disabled={!isBookable}
       >
         <Link to={`/lab/${lab.id}`} aria-disabled={!isBookable} onClick={(e) => !isBookable && e.preventDefault()}>
-            Cek Kelas
+            Lihat Detail
         </Link>
       </Button>
     </Card>
@@ -101,6 +120,8 @@ const LabCardSkeleton = () => (
     <Skeleton className="h-9 w-24 rounded-md" />
   </Card>
 );
+
+import { DynamicLogo } from '@/components/ui/DynamicLogo';
 
 const DashboardContent = () => {
   const { toggleSidebar } = useSidebar();
@@ -148,11 +169,14 @@ const DashboardContent = () => {
   return (
     <div className="min-h-screen bg-gray-100 font-sans flex">
       {/* --- Sidebar (Desktop) --- */}
-      <Sidebar className="hidden md:flex flex-col">
-        <SidebarHeader className="p-4">
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 bg-blue-600 rounded-full"></div>
-            <h1 className="font-bold text-lg">Lab Unsika</h1>
+      <Sidebar className="hidden md:flex flex-col bg-gradient-to-b from-white to-blue-50/30">
+        <SidebarHeader className="p-4 border-b border-blue-100/50">
+          <div className="flex items-center gap-3">
+            <DynamicLogo />
+            <div>
+              <h1 className="font-bold text-lg bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">Lab Unsika</h1>
+              <p className="text-xs text-gray-500">Portal Reservasi</p>
+            </div>
           </div>
         </SidebarHeader>
         <SidebarContent>
@@ -182,7 +206,7 @@ const DashboardContent = () => {
       {/* --- Main Content --- */}
       <SidebarInset className="flex-1 pb-20 md:pb-0">
         {/* Header (Mobile & Desktop) */}
-        <header className="bg-white md:bg-transparent p-4 shadow-sm md:shadow-none sticky top-0 z-10">
+        <header className="bg-white/80 backdrop-blur-xl md:bg-transparent p-4 shadow-sm md:shadow-none sticky top-0 z-10 border-b border-gray-100 md:border-0">
           <div className="flex justify-between items-center w-full">
             {/* Left side for mobile: Sidebar Trigger and Title */}
             <div className="flex items-center gap-2 md:hidden">
@@ -191,15 +215,15 @@ const DashboardContent = () => {
             </div>
 
             {/* Center for desktop: Search bar */}
-            <div className="relative w-full max-w-xs hidden md:block">
+            <div className="relative w-full max-w-md hidden md:block">
               <Input
                 type="text"
-                placeholder="Cari Ruangan"
-                className="bg-white rounded-full pl-10 h-10 shadow-sm"
+                placeholder="Cari Ruangan..."
+                className="glass border-0 rounded-2xl pl-11 h-11 shadow-elegant focus-visible:ring-2 focus-visible:ring-blue-500/50 transition-smooth"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
               />
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+              <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-blue-500/70" />
             </div>
 
             {/* Right side for both: Notifications and Profile Dropdown */}
@@ -227,19 +251,22 @@ const DashboardContent = () => {
 
         {/* Content Body */}
         <main className="p-4">
-          <h1 className="text-2xl font-bold text-gray-800 mb-4 hidden md:block">
-            Pilih Laboratorium
-          </h1>
+          <div className="mb-6 hidden md:block">
+            <h1 className="text-3xl font-bold bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text text-transparent mb-2">
+              Pilih Laboratorium
+            </h1>
+            <p className="text-gray-600 text-sm">Temukan dan pesan laboratorium sesuai kebutuhan Anda</p>
+          </div>
           {/* Search for Mobile */}
-          <div className="relative mb-4 md:hidden">
+          <div className="relative mb-6 md:hidden">
             <Input
               type="text"
-              placeholder="Cari Ruangan"
-              className="bg-white rounded-full pl-10 h-12 shadow-sm"
+              placeholder="Cari Ruangan..."
+              className="glass border-0 rounded-2xl pl-12 h-14 shadow-elegant text-base"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
             />
-            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-6 h-6 text-blue-500/70" />
           </div>
 
           {/* Labs Grid */}
@@ -250,7 +277,7 @@ const DashboardContent = () => {
       </SidebarInset>
 
       {/* --- Bottom Navigation (Mobile) --- */}
-      <footer className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 flex justify-around py-3 shadow-[0_-1px_10px_rgba(0,0,0,0.05)]">
+      <footer className="md:hidden fixed bottom-0 left-0 right-0 bg-white/90 backdrop-blur-xl border-t border-gray-100 flex justify-around py-3 shadow-[0_-4px_20px_rgba(0,0,0,0.08)]">
         <Link to="/dashboard" className="flex flex-col items-center gap-1 text-blue-600">
           <Home className="w-6 h-6" />
           <span className="text-xs font-semibold">Home</span>

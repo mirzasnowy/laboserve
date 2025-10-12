@@ -1,4 +1,4 @@
-import { getToken } from "firebase/messaging";
+import { getToken, onMessage } from "firebase/messaging";
 import { messaging } from "./firebase";
 
 export const requestForToken = async (userId: string, role: string) => {
@@ -8,9 +8,16 @@ export const requestForToken = async (userId: string, role: string) => {
   }
 
   try {
+    // Register service worker
+    const registration = await navigator.serviceWorker.register('/firebase-messaging-sw.js');
+    console.log('Service Worker registered:', registration);
+
     const permission = await Notification.requestPermission();
     if (permission === "granted") {
-      const currentToken = await getToken(messaging, { vapidKey: "BE7u1rar-pRLJ1V87RMr0q5ZZ2OKKzJS2lr7atAhIGT9jb7RIa4D6EEdMzCWMp2CtuXM_62-FoNlJ1dtyu0fcdw" }); // Replace with your VAPID key
+      const currentToken = await getToken(messaging, { 
+        vapidKey: "BE7u1rar-pRLJ1V87RMr0q5ZZ2OKKzJS2lr7atAhIGT9jb7RIa4D6EEdMzCWMp2CtuXM_62-FoNlJ1dtyu0fcdw",
+        serviceWorkerRegistration: registration
+      });
       if (currentToken) {
         console.log("FCM registration token:", currentToken);
         // Send this token to your server to save it for sending notifications
@@ -33,3 +40,12 @@ export const requestForToken = async (userId: string, role: string) => {
     console.error("An error occurred while retrieving token or sending to server.", err);
   }
 };
+
+// Handle foreground messages
+export const onMessageListener = () =>
+  new Promise((resolve) => {
+    onMessage(messaging, (payload) => {
+      console.log('Foreground message received:', payload);
+      resolve(payload);
+    });
+  });

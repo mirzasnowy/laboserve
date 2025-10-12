@@ -24,6 +24,20 @@ interface Lab {
   specifications: Record<string, number | string>;
 }
 
+const slugify = (text: string) => {
+  return text
+    .toString()
+    .toLowerCase()
+    .replace(/\s+/g, '-')           // Replace spaces with -
+    .replace(/[^\w\-]+/g, '')       // Remove all non-word chars
+    .replace(/\-\-+/g, '-')         // Replace multiple - with single -
+    .replace(/^-+/, '')             // Trim - from start of text
+    .replace(/-+$/, '');            // Trim - from end of text
+}
+
+import { useFirebaseImage } from '@/hooks/useFirebaseImage';
+import { Skeleton } from '@/components/ui/skeleton';
+
 // Form component for Add/Edit Lab
 const LabForm = ({ lab, onSave, closeDialog }: { lab?: Lab | null, onSave: (data: Partial<Lab>) => Promise<void>, closeDialog: () => void }) => {
   const [name, setName] = useState(lab?.name || '');
@@ -32,6 +46,7 @@ const LabForm = ({ lab, onSave, closeDialog }: { lab?: Lab | null, onSave: (data
   const [specItems, setSpecItems] = useState(Object.entries(lab?.specifications || {}).map(([key, value]) => ({ key, value: String(value) })));
   const [newImageFile, setNewImageFile] = useState<File | null>(null);
   const [isSaving, setIsSaving] = useState(false);
+  const { imageUrl, loading: imageLoading } = useFirebaseImage(lab?.image);
 
   const handleSpecChange = (index: number, field: 'key' | 'value', value: string) => {
     const newItems = [...specItems];
@@ -61,15 +76,16 @@ const LabForm = ({ lab, onSave, closeDialog }: { lab?: Lab | null, onSave: (data
 
     setIsSaving(true);
     
-    let imageUrl = lab?.image;
+    let imageUri = lab?.image; // Keep the old URI if no new image
     if (newImageFile) {
-      const imagePath = `labs/${lab?.id || Date.now()}/${newImageFile.name}`;
+      const labSlug = slugify(name);
+      const imagePath = `labs/${labSlug}/lab-pict.png`;
       const imageRef = ref(storage, imagePath);
       await uploadBytes(imageRef, newImageFile);
-      imageUrl = await getDownloadURL(imageRef);
+      imageUri = `gs://${imageRef.bucket}/${imageRef.fullPath}`;
     }
 
-    await onSave({ name, location, status, specifications, image: imageUrl });
+    await onSave({ name, location, status, specifications, image: imageUri });
     setIsSaving(false);
     closeDialog();
   };
@@ -130,7 +146,11 @@ const LabForm = ({ lab, onSave, closeDialog }: { lab?: Lab | null, onSave: (data
             <div className="grid grid-cols-4 items-center gap-4">
                 <Label className="text-right">Gambar Saat Ini</Label>
                 <div className="col-span-3">
-                    <img src={lab.image} alt="Current lab" className="w-24 h-24 object-cover rounded-md border" />
+                  {imageLoading ? (
+                    <Skeleton className="w-24 h-24 rounded-md border" />
+                  ) : (
+                    <img src={imageUrl || '/placeholder.svg'} alt="Current lab" className="w-24 h-24 object-cover rounded-md border" />
+                  )}
                 </div>
             </div>
         )}

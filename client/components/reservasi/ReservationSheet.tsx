@@ -182,12 +182,18 @@ export function ReservationSheet({ open, onOpenChange, userName, userId, labId, 
       await addDoc(collection(db, "reservations"), reservationData);
 
       // Notify admins about the new booking
+      const dateInSeconds = normalizedDate.getTime() / 1000;
       await fetch("/api/notify-admin-new-booking", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ reservation: reservationData }),
+        body: JSON.stringify({ 
+          reservation: {
+            ...reservationData,
+            date: { _seconds: dateInSeconds }
+          }
+        }),
       });
 
       toast({

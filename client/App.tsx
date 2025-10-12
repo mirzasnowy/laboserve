@@ -1,7 +1,10 @@
 import "./global.css";
 import { useEffect } from "react";
 import { seedDatabase } from "./lib/seed";
+import { updateLabImages } from "./lib/update-lab-images";
 import { requestForToken } from "./lib/notifications";
+import { onMessage } from "firebase/messaging";
+import { messaging } from "@/lib/firebase";
 import { Toaster } from "@/components/ui/toaster";
 import { useToast } from "@/components/ui/use-toast";
 import { createRoot } from "react-dom/client";
@@ -49,6 +52,7 @@ const AuthErrorNotifier = () => {
 
 const MainLayout = () => {
   const { profile, loading, firebaseUser } = useAuth();
+  const { toast } = useToast();
   const location = useLocation();
   const isAdmin = profile?.role === 'admin';
 
@@ -57,6 +61,22 @@ const MainLayout = () => {
       requestForToken(firebaseUser.uid, profile.role);
     }
   }, [profile, firebaseUser]);
+
+  useEffect(() => {
+    if (!profile || !firebaseUser) return;
+
+    // Set up foreground message listener with proper cleanup
+    const unsubscribe = onMessage(messaging, (payload) => {
+      toast({
+        title: payload.notification?.title || 'Notifikasi Baru',
+        description: payload.notification?.body || 'Anda memiliki notifikasi baru.',
+      });
+    });
+
+    return () => {
+      unsubscribe();
+    };
+  }, [profile, firebaseUser, toast]);
 
   // 1. While Firebase is initializing, show a global loader.
   if (loading) {
@@ -117,6 +137,8 @@ const MainLayout = () => {
 const App = () => {
   useEffect(() => {
     seedDatabase();
+    // Update lab images once
+    // updateLabImages();
   }, []);
 
   return (

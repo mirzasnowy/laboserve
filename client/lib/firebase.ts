@@ -9,8 +9,6 @@ import { getFirestore, collection } from "firebase/firestore";
 import { getStorage } from "firebase/storage";
 import { getMessaging } from "firebase/messaging";
 
-// !!! IMPORTANT !!!
-// Replace this with your own Firebase configuration
 const firebaseConfig = {
   apiKey: "AIzaSyChfHyr0fShetpMBsFoVs0yr2A7WoyQqFY",
   authDomain: "laboserve-94e91.firebaseapp.com",

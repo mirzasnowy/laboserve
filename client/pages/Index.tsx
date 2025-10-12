@@ -29,23 +29,24 @@ export default function Index() {
   };
 
   return (
-    <div className="min-h-screen bg-white sm:bg-gray-50 text-text-primary">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 text-text-primary">
 
       {/* Responsive layout */}
       <div className="mx-auto max-w-6xl px-6 md:px-8 py-8 md:py-16 grid md:grid-cols-2 gap-10 lg:gap-16 items-center">
         {/* Left hero (desktop/tablet) */}
         <div className="hidden md:block relative">
-          <div className="absolute -top-20 -left-16 h-72 w-72 rounded-full bg-gradient-to-r from-primary-blue to-secondary-blue opacity-20 blur-3xl" />
-          <h1 className="relative z-10 font-['Poppins'] text-4xl lg:text-5xl font-semibold leading-tight text-text-primary">
+          <div className="absolute -top-20 -left-16 h-80 w-80 rounded-full bg-gradient-to-r from-blue-400 to-indigo-600 opacity-20 blur-3xl animate-pulse" />
+          <div className="absolute top-40 -right-20 h-64 w-64 rounded-full bg-gradient-to-r from-purple-400 to-pink-400 opacity-15 blur-3xl animate-pulse" style={{animationDelay: '1s'}} />
+          <h1 className="relative z-10 font-['Poppins'] text-5xl lg:text-6xl font-bold leading-tight bg-gradient-to-r from-gray-900 via-blue-900 to-indigo-900 bg-clip-text text-transparent">
             Selamat Datang!
           </h1>
-          <p className="relative z-10 mt-3 text-base text-text-primary/80 font-['Poppins']">
+          <p className="relative z-10 mt-4 text-lg text-gray-700 font-['Poppins']">
             Masuk untuk melanjutkan ke dashboard Anda.
           </p>
         </div>
 
         {/* Form card */}
-        <div className="md:bg-white md:shadow-xl md:rounded-2xl md:p-8 md:py-10 md:border border-border-gray md:max-w-lg md:justify-self-end w-full">
+        <div className="glass shadow-elegant md:shadow-elegant-hover md:rounded-3xl md:p-10 md:py-12 md:border-0 md:max-w-lg md:justify-self-end w-full">
           {/* Title (mobile) */}
           <div className="md:hidden mb-8">
             <h1 className="text-[30px] font-medium text-text-primary font-['Poppins'] mb-2">
@@ -111,8 +112,8 @@ export default function Index() {
           <button
             onClick={handleLogin}
             className={cn(
-              "w-full h-[50px] rounded-full text-white text-[14px] md:text-base font-semibold font-['Poppins'] mb-8 transition-opacity",
-              "bg-login-gradient opacity-90 hover:opacity-100",
+              "w-full h-[52px] rounded-full text-white text-[14px] md:text-base font-semibold font-['Poppins'] mb-8",
+              "gradient-primary shadow-lg shadow-blue-500/30 hover:shadow-xl hover:shadow-blue-500/40 transition-smooth hover:scale-[1.02]",
             )}
           >
             Masuk
@@ -128,7 +129,7 @@ export default function Index() {
           {/* Google */}
           <button
             onClick={handleGoogleLogin}
-            className="w-full h-[50px] flex items-center justify-center space-x-3 border-[1.5px] border-text-secondary rounded-lg bg-white hover:bg-gray-50 transition-colors"
+            className="w-full h-[52px] flex items-center justify-center space-x-3 border-2 border-gray-200 rounded-xl bg-white hover:bg-gray-50 transition-smooth hover:border-blue-300 hover:shadow-md"
           >
             <svg
               width="24"

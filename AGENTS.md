@@ -1,16 +1,140 @@
-# Fusion Starter
+# Codebuff Agents
 
-A production-ready full-stack React application template with integrated Express server, featuring React Router 6 SPA mode, TypeScript, Vitest, Zod and modern tooling.
+This document describes the available agents that can be spawned to help with development tasks in this project.
 
-While the starter comes with a express server, only create endpoint when strictly neccesary, for example to encapsulate logic that must leave in the server, such as private keys handling, or certain DB operations, db...
+## Available Agents
 
-## Tech Stack
+### File Explorer (`codebuff/file-explorer@0.0.7`)
+Comprehensively explores the codebase and reports back on findings.
 
-- **PNPM**: Prefer pnpm
-- **Frontend**: React 18 + React Router 6 (spa) + TypeScript + Vite + TailwindCSS 3
-- **Backend**: Express server integrated with Vite dev server
-- **Testing**: Vitest
-- **UI**: Radix UI + TailwindCSS 3 + Lucide React icons
+**Use when:** You need to understand different parts of the codebase or discover relevant files.
+
+**Parameters:**
+- `prompt`: What you need to accomplish by exploring the codebase
+- `prompts`: List of 1-4 different parts of the codebase to explore
+
+**Example:**
+```json
+{
+  "agent_type": "codebuff/file-explorer@0.0.7",
+  "prompt": "Understand the reservation system architecture",
+  "params": {
+    "prompts": [
+      "Client-side reservation components",
+      "Server-side reservation API",
+      "Database schema for reservations"
+    ]
+  }
+}
+```
+
+### File Picker (`codebuff/file-picker@0.0.5`)
+Finds relevant files in the codebase related to a coding task.
+
+**Use when:** You need to locate files for a specific feature or bug fix.
+
+**Parameters:**
+- `prompt`: A coding task to complete
+
+**Example:**
+```json
+{
+  "agent_type": "codebuff/file-picker@0.0.5",
+  "prompt": "Fix the reservation form validation"
+}
+```
+
+### Researcher (`codebuff/researcher@0.0.4`)
+Browses the web and reads technical documentation to find relevant information.
+
+**Use when:** You need to research APIs, libraries, or best practices.
+
+**Parameters:**
+- `prompt`: A question you would like answered
+
+**Example:**
+```json
+{
+  "agent_type": "codebuff/researcher@0.0.4",
+  "prompt": "How to implement real-time notifications with Firebase Cloud Messaging?"
+}
+```
+
+### Thinker (`codebuff/thinker@0.0.5`)
+Performs deep thinking on complex problems with access to current message history.
+
+**Use when:** You need to solve a complex architectural or algorithmic problem.
+
+**Parameters:**
+- `prompt`: The problem you are trying to solve
+
+**Example:**
+```json
+{
+  "agent_type": "codebuff/thinker@0.0.5",
+  "prompt": "Design a conflict resolution strategy for overlapping lab reservations"
+}
+```
+
+### Reviewer (`codebuff/reviewer@0.0.11`)
+Reviews file changes and provides critical feedback.
+
+**Use when:** After making significant changes to ensure code quality.
+
+**Parameters:**
+- `prompt`: What should be reviewed (be brief)
+
+**Example:**
+```json
+{
+  "agent_type": "codebuff/reviewer@0.0.11",
+  "prompt": "Reservation validation logic changes"
+}
+```
+
+### Context Pruner (`codebuff/context-pruner@0.0.23`)
+Prunes context by removing old tool results and messages.
+
+**Use when:** Conversation history becomes too large.
+
+**Parameters:**
+- `maxContextLength`: Maximum context length to maintain
+
+**Example:**
+```json
+{
+  "agent_type": "codebuff/context-pruner@0.0.23",
+  "params": {
+    "maxContextLength": 50000
+  }
+}
+```
+
+## Usage Tips
+
+1. **Start with File Explorer or File Picker** when beginning work on a new feature
+2. **Use Researcher** when you need external documentation or examples
+3. **Spawn Thinker** for complex architectural decisions
+4. **Always use Reviewer** after significant code changes
+5. **Spawn agents in parallel** when possible for efficiency
+
+## Project-Specific Agent Workflows
+
+### Adding a New Feature
+1. File Explorer → understand existing architecture
+2. Researcher → gather best practices
+3. Thinker → design the solution
+4. Reviewer → validate implementation
+
+### Debugging an Issue
+1. File Picker → locate relevant files
+2. Thinker → analyze the problem
+3. Reviewer → verify the fix
+
+### Refactoring
+1. File Explorer → map dependencies
+2. Thinker → plan refactoring strategy
+3. Reviewer → ensure nothing broke
 
 ## Project Structure
 

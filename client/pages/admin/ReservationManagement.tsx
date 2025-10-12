@@ -12,8 +12,10 @@ import { Eye } from 'lucide-react';
 interface Reservation {
   id: string;
   userName: string;
+  userId: string;
   labId: string;
-  date: { toDate: () => Date };
+  labName: string;
+  date: { toDate: () => Date; _seconds?: number };
   timeSlot: string;
   status: 'pending' | 'approved' | 'rejected';
   description: string;
@@ -44,6 +46,9 @@ export function ReservationManagement() {
 
       const updatedReservation = reservations.find(res => res.id === id);
       if (updatedReservation) {
+        // Convert date to seconds format for API
+        const dateInSeconds = updatedReservation.date.toDate().getTime() / 1000;
+        
         await fetch("/api/notify-user-booking-status", {
           method: "POST",
           headers: {
@@ -53,8 +58,8 @@ export function ReservationManagement() {
             reservationId: updatedReservation.id,
             userId: updatedReservation.userId,
             status: status,
-            labName: updatedReservation.labId, // Assuming labId is the labName for now
-            date: updatedReservation.date, // Pass the original date object
+            labName: updatedReservation.labName || updatedReservation.labId,
+            date: { _seconds: dateInSeconds },
             timeSlot: updatedReservation.timeSlot,
           }),
         });

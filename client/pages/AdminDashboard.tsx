@@ -14,6 +14,7 @@ import {
 import { User } from 'lucide-react';
 import { ReservationManagement } from './admin/ReservationManagement';
 import { LabManagement } from './admin/LabManagement';
+import { SettingsManagement } from './admin/SettingsManagement';
 
 const AdminDashboard: React.FC = () => {
   const { logout } = useAuth();
@@ -40,15 +41,19 @@ const AdminDashboard: React.FC = () => {
         </header>
       <main className="p-4 sm:p-8">
         <Tabs defaultValue="reservations">
-          <TabsList className="grid w-full grid-cols-2">
+          <TabsList className="grid w-full grid-cols-3">
             <TabsTrigger value="reservations">Manajemen Reservasi</TabsTrigger>
             <TabsTrigger value="labs">Manajemen Laboratorium</TabsTrigger>
+            <TabsTrigger value="settings">Pengaturan</TabsTrigger>
           </TabsList>
           <TabsContent value="reservations">
             <ReservationManagement />
           </TabsContent>
           <TabsContent value="labs">
             <LabManagement />
+          </TabsContent>
+          <TabsContent value="settings">
+            <SettingsManagement />
           </TabsContent>
         </Tabs>
       </main>

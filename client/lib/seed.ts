@@ -8,7 +8,7 @@ const labsData = [
     name: "Lab Dasar 1",
     location: "Lantai 3 - Gedung Fasilkom",
     status: "Tersedia",
-    image: "/placeholder.svg",
+    image: "https://firebasestorage.googleapis.com/v0/b/laboserve-94e91.firebasestorage.app/o/labs%2Flab-dasar-1?alt=media",
     specifications: {
       Komputer: 30,
       Infocus: 1,
@@ -20,7 +20,7 @@ const labsData = [
     name: "Lab Dasar 2",
     location: "Lantai 3 - Gedung Fasilkom",
     status: "Tidak Tersedia",
-    image: "/placeholder.svg",
+    image: "https://firebasestorage.googleapis.com/v0/b/laboserve-94e91.firebasestorage.app/o/labs%2Flab-dasar-2?alt=media",
     specifications: {
       Komputer: 35,
       Infocus: 1,
@@ -32,7 +32,7 @@ const labsData = [
     name: "Lab Lanjut 1",
     location: "Lantai 3 - Gedung Fasilkom",
     status: "Maintenance",
-    image: "/placeholder.svg",
+    image: "https://firebasestorage.googleapis.com/v0/b/laboserve-94e91.firebasestorage.app/o/labs%2Flab-lanjut-1?alt=media",
     specifications: {
       Komputer: 25,
       Infocus: 2,
@@ -44,7 +44,7 @@ const labsData = [
     name: "Lab Lanjut 2",
     location: "Lantai 3 - Gedung Fasilkom",
     status: "Tersedia",
-    image: "/placeholder.svg",
+    image: "https://firebasestorage.googleapis.com/v0/b/laboserve-94e91.firebasestorage.app/o/labs%2Flab-lanjut-2?alt=media",
     specifications: {
       Komputer: 30,
       Infocus: 1,
