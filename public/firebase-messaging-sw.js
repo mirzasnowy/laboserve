@@ -18,23 +18,29 @@ firebase.initializeApp(firebaseConfig);
 // Retrieve an instance of Firebase Messaging
 const messaging = firebase.messaging();
 
-messaging.onBackgroundMessage((payload) => {
-  console.log(
-    '[firebase-messaging-sw.js] Received background message ',
-    payload
-  );
+self.addEventListener('push', (event) => {
+  console.log('[firebase-messaging-sw.js] Push event received.', event);
 
-  // Customize the notification here
+  let payload;
+  try {
+    payload = event.data.json();
+  } catch (e) {
+    console.error('Could not parse push data as JSON.', e);
+    payload = { notification: { title: 'Notifikasi Baru', body: 'Anda memiliki pesan baru.' } };
+  }
+
   const notificationTitle = payload.notification.title;
   const notificationOptions = {
     body: payload.notification.body,
     icon: '/favicon.ico',
     badge: '/favicon.ico',
     vibrate: [200, 100, 200],
-    data: payload.data,
+    data: payload.data, // Pass along any extra data
   };
 
-  self.registration.showNotification(notificationTitle, notificationOptions);
+  event.waitUntil(
+    self.registration.showNotification(notificationTitle, notificationOptions)
+  );
 });
 
 // Handle notification clicks
