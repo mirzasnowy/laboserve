@@ -138,11 +138,29 @@ const MainLayout = () => {
   return <Outlet />; // Render the Dashboard or LabDetail page.
 };
 
+import { Workbox } from 'workbox-window';
+import { showReloadPrompt } from './components/ui/ReloadPrompt';
+
 const App = () => {
   useEffect(() => {
-    seedDatabase();
-    // Update lab images once
+    // seedDatabase();
     // updateLabImages();
+
+    if ('serviceWorker' in navigator) {
+      const wb = new Workbox('/service-worker.js');
+
+      const showPrompt = () => {
+        showReloadPrompt(() => {
+          wb.addEventListener('controlling', () => {
+            window.location.reload();
+          });
+          wb.messageSW({ type: 'SKIP_WAITING' });
+        });
+      };
+
+      wb.addEventListener('waiting', showPrompt);
+      wb.register();
+    }
   }, []);
 
   return (
