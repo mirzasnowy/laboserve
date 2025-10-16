@@ -63,11 +63,13 @@ export function createProductionServer() {
       const adminTokens = adminTokensSnapshot.docs.map(doc => doc.id);
 
       if (adminTokens.length > 0) {
+        // Create a message with both notification and data payloads for proper push notification
         const message = {
           notification: {
             title: "Reservasi Baru!",
             body: `Reservasi baru untuk ${reservation.labName} pada ${new Date(reservation.date._seconds * 1000).toLocaleDateString()} ${reservation.timeSlot} oleh ${reservation.userName}.`,
             icon: "/favicon.ico",
+            click_action: "/admin",
           },
           data: {
             click_action: "/admin",

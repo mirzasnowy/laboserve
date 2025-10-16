@@ -70,6 +70,7 @@ const MainLayout = () => {
     // Set up foreground message listener with proper cleanup
     const unsubscribe = onMessage(messaging, (payload) => {
       console.log('Foreground message received:', payload);
+      // Show toast notification for foreground messages
       toast({
         title: payload.notification?.title || 'Notifikasi Baru',
         description: payload.notification?.body || 'Anda memiliki notifikasi baru.',
@@ -147,9 +148,19 @@ const App = () => {
     // seedDatabase();
     // updateLabImages();
 
+    // Register service workers for PWA functionality
     if ('serviceWorker' in navigator) {
-      const wb = new Workbox('/service-worker.js');
+      // Register the messaging service worker (for FCM notifications)
+      navigator.serviceWorker.register('/firebase-messaging-sw.js')
+        .then((registration) => {
+          console.log('Firebase messaging service worker registered:', registration);
+        })
+        .catch((error) => {
+          console.error('Firebase messaging service worker registration failed:', error);
+        });
 
+      // Register the main service worker for caching
+      const wb = new Workbox('/service-worker.js');
       const showPrompt = () => {
         showReloadPrompt(() => {
           wb.addEventListener('controlling', () => {

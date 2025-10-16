@@ -18,6 +18,7 @@ firebase.initializeApp(firebaseConfig);
 // Retrieve an instance of Firebase Messaging
 const messaging = firebase.messaging();
 
+// Handle background messages - this is triggered when the app is in background/closed
 messaging.onBackgroundMessage((payload) => {
   console.log(
     '[firebase-messaging-sw.js] Received background message ',
@@ -36,7 +37,17 @@ messaging.onBackgroundMessage((payload) => {
       reservationId: payload.data?.reservation_id || null,
       userId: payload.data?.user_id || null,
       labId: payload.data?.lab_id || null
-    }
+    },
+    // Add tag for grouping notifications
+    tag: 'laboserve-notification',
+    // Make notification persistent
+    requireInteraction: false,
+    // Vibrate pattern
+    vibrate: [100, 50, 100],
+    // Add actions
+    actions: [
+      { action: 'open', title: 'Buka Aplikasi', icon: '/favicon.ico' }
+    ]
   };
 
   self.registration.showNotification(notificationTitle, notificationOptions);
@@ -47,11 +58,17 @@ self.addEventListener('notificationclick', (event) => {
   console.log('Notification clicked:', event);
   event.notification.close();
 
-  // Get the click action from notification data
-  const clickAction = event.notification.data?.clickAction || '/';
-
-  // Navigate to the appropriate page when notification is clicked
-  event.waitUntil(
-    clients.openWindow(clickAction)
-  );
+  // Check if the user clicked on the notification or an action
+  if (event.action === 'open') {
+    // User clicked on the action button
+    event.waitUntil(
+      clients.openWindow('/admin')
+    );
+  } else {
+    // User clicked on the notification itself
+    const clickAction = event.notification.data?.clickAction || '/';
+    event.waitUntil(
+      clients.openWindow(clickAction)
+    );
+  }
 });

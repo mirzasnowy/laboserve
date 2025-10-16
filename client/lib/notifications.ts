@@ -15,7 +15,7 @@ export const requestForToken = async (userId: string, role: string) => {
     const permission = await Notification.requestPermission();
     if (permission === "granted") {
       const currentToken = await getToken(messaging, { 
-        vapidKey: import.meta.env.VITE_FIREBASE_VAPID_KEY,
+        vapidKey: "BE7u1rar-pRLJ1V87RMr0q5ZZ2OKKzJS2lr7atAhIGT9jb7RIa4D6EEdMzCWMp2CtuXM_62-FoNlJ1dtyu0fcdw",
         serviceWorkerRegistration: registration
       });
       if (currentToken) {
