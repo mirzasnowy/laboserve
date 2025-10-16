@@ -95,27 +95,45 @@ export function ReservationSheet({ open, onOpenChange, userName, userId, labId, 
       return;
     }
 
-    // Define the start and end of the selected day to avoid timezone issues.
+    const getDayOfWeek = (d: Date): string => {
+      const days = ['MINGGU', 'SENIN', 'SELASA', 'RABU', 'KAMIS', 'JUMAT', 'SABTU'];
+      return days[d.getDay()];
+    };
+
+    // 1. Fetch approved reservations for the selected date
     const startOfDay = new Date(date);
     startOfDay.setHours(0, 0, 0, 0);
-
     const endOfDay = new Date(date);
     endOfDay.setHours(23, 59, 59, 999);
 
-    const q = query(
+    const reservationsQuery = query(
       collection(db, "reservations"),
       where("labId", "==", labId),
       where("date", ">=", startOfDay),
       where("date", "<=", endOfDay),
-      where("status", "==", "approved") // Only block slots that are already approved
+      where("status", "==", "approved")
     );
 
-    const unsubscribe = onSnapshot(q, (snapshot) => {
-      const slots = snapshot.docs.map(doc => doc.data().timeSlot);
-      setBookedSlots(slots);
+    const unsubscribeReservations = onSnapshot(reservationsQuery, (snapshot) => {
+      const reservationSlots = snapshot.docs.map(doc => doc.data().timeSlot);
+      
+      // 2. Fetch faculty schedules for the selected day of the week
+      const selectedDay = getDayOfWeek(date);
+      const facultySchedulesQuery = query(
+        collection(db, "faculty_schedules"),
+        where("labId", "==", labId),
+        where("day", "==", selectedDay)
+      );
+
+      getDocs(facultySchedulesQuery).then(facultySnapshot => {
+        const facultySlots = facultySnapshot.docs.map(doc => doc.data().timeSlot);
+        
+        // 3. Combine both sets of booked slots
+        setBookedSlots([...new Set([...reservationSlots, ...facultySlots])]);
+      });
     });
 
-    return () => unsubscribe();
+    return () => unsubscribeReservations();
   }, [date, labId]);
 
   const timeSlots = ["07.30 - 10.00", "10.00 - 12.30", "12.30 - 15.00", "15.00 - 18.00"];

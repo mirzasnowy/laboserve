@@ -69,6 +69,7 @@ const MainLayout = () => {
 
     // Set up foreground message listener with proper cleanup
     const unsubscribe = onMessage(messaging, (payload) => {
+      console.log('Foreground message received:', payload);
       toast({
         title: payload.notification?.title || 'Notifikasi Baru',
         description: payload.notification?.body || 'Anda memiliki notifikasi baru.',

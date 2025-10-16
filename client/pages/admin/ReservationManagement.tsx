@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { useToast } from '@/components/ui/use-toast';
 import { db } from '@/lib/firebase';
 import { collection, onSnapshot, query, orderBy, doc, updateDoc } from 'firebase/firestore';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -40,35 +41,56 @@ export function ReservationManagement() {
     return () => unsubscribe();
   }, []);
 
+  const { toast } = useToast();
+
   const handleUpdateStatus = async (id: string, status: 'approved' | 'rejected') => {
     const reservationRef = doc(db, 'reservations', id);
+    const updatedReservation = reservations.find(res => res.id === id);
+
+    if (!updatedReservation) {
+      console.error("Reservation not found!");
+      toast({ title: "Error", description: "Reservasi tidak ditemukan.", variant: "destructive" });
+      return;
+    }
+
     try {
+      // 1. Update the status in Firestore
       await updateDoc(reservationRef, { status, updatedAt: new Date() });
 
-      const updatedReservation = reservations.find(res => res.id === id);
-      if (updatedReservation) {
-        // Convert date to seconds format for API
-        const dateInSeconds = updatedReservation.date.toDate().getTime() / 1000;
-        
-        await fetch("/api/notify-user-booking-status", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            reservationId: updatedReservation.id,
-            userId: updatedReservation.userId,
-            status: status,
-            labName: updatedReservation.labName || updatedReservation.labId,
-            date: { _seconds: dateInSeconds },
-            timeSlot: updatedReservation.timeSlot,
-          }),
-        });
-        console.log(`Notification sent for user ${updatedReservation.userId} for booking ${updatedReservation.id}`);
+      // 2. Send notification to the user via API endpoint
+      const dateInSeconds = updatedReservation.date.toDate().getTime() / 1000;
+      const response = await fetch("/api/notify-user-booking-status", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          reservationId: updatedReservation.id,
+          userId: updatedReservation.userId,
+          status: status,
+          labName: updatedReservation.labName || updatedReservation.labId,
+          date: { _seconds: dateInSeconds },
+          timeSlot: updatedReservation.timeSlot,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to send notification');
       }
 
+      console.log(`Notification sent for user ${updatedReservation.userId} for booking ${updatedReservation.id}`);
+      toast({ 
+        title: "Status Berhasil Diperbarui", 
+        description: `Reservasi telah di-${status} dan notifikasi telah dikirim ke pengguna.`,
+      });
+
     } catch (error) {
-      console.error("Error updating reservation status: ", error);
+      console.error("Error updating reservation status or sending notification: ", error);
+      toast({ 
+        title: "Update Gagal", 
+        description: "Terjadi kesalahan. Silakan coba lagi.", 
+        variant: "destructive" 
+      });
     }
   };
 

@@ -223,8 +223,25 @@ export function useSchedules(selectedDate?: Date) {
           }
         }
         
-        // Combine all schedules
-        setSchedules([...facultySchedules, ...reservationSchedules, ...rescheduledItems]);
+        // Combine all schedules, giving reservations precedence over faculty schedules
+        const finalSchedules = [
+          ...facultySchedules.filter(fs => {
+            // If a date is selected, check if a reservation conflicts with this faculty schedule
+            if (selectedDate) {
+              const dayOfWeek = getDayOfWeek(selectedDate);
+              if (fs.day !== dayOfWeek) return true; // Keep schedules for other days
+
+              return !reservationSchedules.some(
+                rs => rs.labId === fs.labId && rs.timeSlot === fs.timeSlot
+              );
+            }
+            return true; // Keep all faculty schedules if no date is selected (weekly view)
+          }),
+          ...reservationSchedules,
+          ...rescheduledItems
+        ];
+
+        setSchedules(finalSchedules);
         setError(null);
       } catch (err) {
         console.error('Error fetching schedules:', err);

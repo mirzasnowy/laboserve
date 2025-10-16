@@ -51,3 +51,18 @@ self.addEventListener('activate', (event) => {
     })
   );
 });
+
+// Add notification click handler to the main service worker as well
+// This handles clicks from notifications sent via Firebase Cloud Messaging
+self.addEventListener('notificationclick', (event) => {
+  console.log('Notification clicked (in main SW):', event);
+  event.notification.close();
+
+  // Get the click action from notification data
+  const clickAction = event.notification.data?.click_action || '/';
+
+  // Navigate to the appropriate page when notification is clicked
+  event.waitUntil(
+    clients.openWindow(clickAction)
+  );
+});

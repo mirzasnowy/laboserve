@@ -67,6 +67,13 @@ export function createProductionServer() {
           notification: {
             title: "Reservasi Baru!",
             body: `Reservasi baru untuk ${reservation.labName} pada ${new Date(reservation.date._seconds * 1000).toLocaleDateString()} ${reservation.timeSlot} oleh ${reservation.userName}.`,
+            icon: "/favicon.ico",
+          },
+          data: {
+            click_action: "/admin",
+            reservation_id: reservation.id || "",
+            lab_id: reservation.labId || "",
+            user_id: reservation.userId || "",
           },
           tokens: adminTokens,
         };
@@ -100,6 +107,13 @@ export function createProductionServer() {
           notification: {
             title: notificationTitle,
             body: notificationBody,
+            icon: "/favicon.ico",
+          },
+          data: {
+            click_action: "/history-reservation",
+            reservation_id: reservationId || "",
+            lab_name: labName || "",
+            status: status || "",
           },
           tokens: userTokens,
         };
