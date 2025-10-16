@@ -5,15 +5,17 @@ admin.initializeApp();
 
 const db = admin.firestore();
 
-exports.notifyAdminNewBooking = functions.https.onRequest(async (req, res) => {
-  if (req.method !== 'POST') {
-    return res.status(405).send('Method Not Allowed');
-  }
+// Callable function for admin notifications
+exports.notifyAdminNewBooking = functions.https.onCall(async (data, context) => {
+  // Authentication is optional, but if you want to verify the user is an admin:
+  // if (!context.auth || context.auth.token.role !== 'admin') {
+  //   throw new functions.https.HttpsError('permission-denied', 'Must be an admin to call this function.');
+  // }
 
-  const { reservation } = req.body;
+  const { reservation } = data;
 
   if (!reservation) {
-    return res.status(400).send({ message: 'Missing reservation data' });
+    throw new functions.https.HttpsError('invalid-argument', 'Missing reservation data');
   }
 
   try {
@@ -41,22 +43,24 @@ exports.notifyAdminNewBooking = functions.https.onRequest(async (req, res) => {
       console.log('Admin notification sent for new booking:', response);
     }
 
-    res.status(200).send({ message: 'Admin notification process initiated' });
+    return { success: true, message: 'Admin notification process initiated' };
   } catch (error) {
     console.error('Error sending admin notification:', error);
-    res.status(500).send({ message: 'Failed to send admin notification' });
+    throw new functions.https.HttpsError('internal', 'Failed to send admin notification');
   }
 });
 
-exports.notifyUserBookingStatus = functions.https.onRequest(async (req, res) => {
-  if (req.method !== 'POST') {
-    return res.status(405).send('Method Not Allowed');
-  }
+// Callable function for user notifications
+exports.notifyUserBookingStatus = functions.https.onCall(async (data, context) => {
+  // Authentication is optional, but if you want to verify the user is an admin:
+  // if (!context.auth || context.auth.token.role !== 'admin') {
+  //   throw new functions.https.HttpsError('permission-denied', 'Must be an admin to call this function.');
+  // }
 
-  const { reservationId, userId, status, labName, date, timeSlot } = req.body;
+  const { reservationId, userId, status, labName, date, timeSlot } = data;
 
   if (!reservationId || !userId || !status || !labName || !date || !timeSlot) {
-    return res.status(400).send({ message: 'Missing reservation details' });
+    throw new functions.https.HttpsError('invalid-argument', 'Missing reservation details');
   }
 
   try {
@@ -87,22 +91,19 @@ exports.notifyUserBookingStatus = functions.https.onRequest(async (req, res) => 
       console.log(`User notification sent for booking ${reservationId} status: ${status}:`, response);
     }
 
-    res.status(200).send({ message: 'User notification process initiated' });
+    return { success: true, message: 'User notification process initiated' };
   } catch (error) {
     console.error('Error sending user notification:', error);
-    res.status(500).send({ message: 'Failed to send user notification' });
+    throw new functions.https.HttpsError('internal', 'Failed to send user notification');
   }
 });
 
-exports.registerFcmToken = functions.https.onRequest(async (req, res) => {
-  if (req.method !== 'POST') {
-    return res.status(405).send('Method Not Allowed');
-  }
-
-  const { token, userId, role } = req.body;
+// Callable function for FCM token registration
+exports.registerFcmToken = functions.https.onCall(async (data, context) => {
+  const { token, userId, role } = data;
 
   if (!token || !userId || !role) {
-    return res.status(400).send({ message: 'Missing token, userId, or role' });
+    throw new functions.https.HttpsError('invalid-argument', 'Missing token, userId, or role');
   }
 
   try {
@@ -112,9 +113,9 @@ exports.registerFcmToken = functions.https.onRequest(async (req, res) => {
       timestamp: admin.firestore.FieldValue.serverTimestamp(),
     });
 
-    res.status(200).send({ message: 'FCM token registered successfully' });
+    return { success: true, message: 'FCM token registered successfully' };
   } catch (error) {
     console.error('Error registering FCM token:', error);
-    res.status(500).send({ message: 'Failed to register FCM token' });
+    throw new functions.https.HttpsError('internal', 'Failed to register FCM token');
   }
 });
